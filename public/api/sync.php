@@ -5,9 +5,9 @@ declare(strict_types=1);
 require __DIR__ . '/../init.php';
 
 use Ooofix\XmlupdCloud\App\ApiBootstrap;
-use Ooofix\XmlupdCloud\App\Http;
+use Ooofix\XmlupdCloud\App\AppBranding;
+use Ooofix\XmlupdCloud\App.Http;
 use Ooofix\XmlupdCloud\App\InstallService;
-use Ooofix\XmlupdCloud\App\MenuPlacementService;
 use Ooofix\XmlupdCloud\Core\Tenant;
 use Ooofix\XmlupdCloud\Rest\AppDiskService;
 use Ooofix\XmlupdCloud\Rest\BitrixClient;
@@ -22,6 +22,7 @@ ApiBootstrap::run(static function (array $request, BitrixClient $client, string 
     match ($action) {
         'userfields' => handleUserfields($client, $portalId),
         'menu'       => handleMenu($client),
+        'branding'   => handleBranding($client),
         'placements' => handlePlacements($client),
         'disk'         => handleDisk($client, $portalId),
         'permissions'  => handlePermissions($client, $portalId),
@@ -39,13 +40,27 @@ ApiBootstrap::run(static function (array $request, BitrixClient $client, string 
 
 function handleMenu(BitrixClient $client): void
 {
-    $warnings = (new MenuPlacementService())->bindLeftMenu($client);
+    $warnings = (new AppBranding())->apply($client);
 
     Http::jsonResponse([
         'success'  => true,
         'action'   => 'menu',
-        'message'  => $warnings === [] ? 'Пункт меню обновлён' : implode('; ', $warnings),
+        'message'  => $warnings === [] ? 'Пункт меню и брендинг обновлены' : implode('; ', $warnings),
         'warnings' => $warnings,
+        'branding' => AppBranding::manifest(),
+    ]);
+}
+
+function handleBranding(BitrixClient $client): void
+{
+    $warnings = (new AppBranding())->apply($client);
+
+    Http::jsonResponse([
+        'success'  => true,
+        'action'   => 'branding',
+        'message'  => 'Название и иконка приложения обновлены в меню портала',
+        'warnings' => $warnings,
+        'branding' => AppBranding::manifest(),
     ]);
 }
 
@@ -68,7 +83,7 @@ function handleDisk(BitrixClient $client, int $portalId): void
     Http::jsonResponse([
         'success'   => true,
         'action'    => 'disk',
-        'message'   => 'Папка /XML/ на Диске B24 готова',
+        'message'   => 'Папка /XML/ на общем Диске B24 готова',
         'folder_id' => $folderId,
     ]);
 }

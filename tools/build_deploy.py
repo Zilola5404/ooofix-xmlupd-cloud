@@ -200,6 +200,21 @@ def sync_frontend() -> int:
     return sum(1 for _ in dst.rglob("*") if _.is_file())
 
 
+def sync_assets() -> int:
+    src = CLOUD_ROOT / "assets"
+    dst = CLOUD_ROOT / "public/assets"
+    if not src.is_dir():
+        return 0
+    dst.mkdir(parents=True, exist_ok=True)
+    count = 0
+    for file_path in src.iterdir():
+        if not file_path.is_file():
+            continue
+        shutil.copy2(file_path, dst / file_path.name)
+        count += 1
+    return count
+
+
 def write_version_file(version: str, version_date: str) -> None:
     (CLOUD_ROOT / "VERSION").write_text(
         f"{version}\n{version_date}\nbox=ooofix.xmlupd\n",
@@ -244,12 +259,14 @@ def main() -> None:
     version, version_date = read_box_version()
     synced = sync_core()
     ui_files = sync_frontend()
+    asset_files = sync_assets()
     write_version_file(version, version_date)
     zip_path = build_zip()
 
     print(f"Box module: {BOX_ROOT}")
     print(f"Core synced files: {synced}")
     print(f"Frontend -> public/frontend: {ui_files} files")
+    print(f"Assets -> public/assets: {asset_files} files")
     print(f"Version: {version} ({version_date})")
     print(f"Deploy ZIP: {zip_path}")
     print(f"ZIP size MB: {round(zip_path.stat().st_size / 1024 / 1024, 2)}")

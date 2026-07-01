@@ -77,6 +77,12 @@ final class PageRenderer
         $meta = '<meta name="ox-cloud-build" content="' . htmlspecialchars($ver, ENT_QUOTES, 'UTF-8') . '">'
             . '<meta name="ox-cloud-title" content="' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '">'
             . '<script>window.OX_CLOUD_API_BASE=' . json_encode($appUrl, JSON_UNESCAPED_UNICODE) . ';</script>';
+
+        if (AppBranding::logoExists()) {
+            $icon = htmlspecialchars(AppBranding::logoUrl(), ENT_QUOTES, 'UTF-8');
+            $meta .= '<link rel="icon" type="image/png" href="' . $icon . '">';
+        }
+
         $html = preg_replace('/<head>/i', '<head>' . $meta, $html, 1) ?? $html;
 
         return $html;

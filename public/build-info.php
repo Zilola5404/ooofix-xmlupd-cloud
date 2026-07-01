@@ -7,6 +7,7 @@ declare(strict_types=1);
  */
 require __DIR__ . '/init.php';
 
+use Ooofix\XmlupdCloud\App\AppBranding;
 use Ooofix\XmlupdCloud\App\AppConfig;
 use Ooofix\XmlupdCloud\App\AppTitle;
 use Ooofix\XmlupdCloud\App\AssetVersion;
@@ -45,6 +46,7 @@ echo json_encode([
     'success'    => true,
     'app_title'  => AppTitle::get(),
     'app_url'    => AppConfig::appUrl(),
+    'branding'   => AppBranding::manifest(),
     'build'      => AssetVersion::get(),
     'php'        => PHP_VERSION,
     'checks'     => $checks,
@@ -52,7 +54,7 @@ echo json_encode([
         'rest_file_saver_marker' => class_exists(\Ooofix\XmlupdCloud\Rest\RestFileSaver::class)
             ? \Ooofix\XmlupdCloud\Rest\RestFileSaver::BUILD_MARKER
             : null,
-        'has_disk_getforapp'     => str_contains($restFileSaverSrc, 'disk.storage.getforapp'),
+        'has_disk_common_storage' => str_contains($restFileSaverSrc, 'disk.storage.getlist'),
         'has_local_fallback'     => str_contains($restFileSaverSrc, 'uploadToXmlFolder'),
         'has_xml_folder'         => class_exists(\Ooofix\XmlupdCloud\Rest\AppDiskService::class),
     ],

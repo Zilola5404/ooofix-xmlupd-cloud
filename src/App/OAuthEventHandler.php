@@ -54,7 +54,7 @@ final class OAuthEventHandler
         $this->oauth->storeApplicationToken($portalId, $auth);
 
         $client = BitrixClient::fromInstallAuth($domain, $auth);
-        $warnings = $this->install->install($client);
+        $warnings = $this->install->install($client, $portalId);
         $report = (new RestPermissionsDiagnostic($client, $portalId))->run();
 
         $version = '';
@@ -69,7 +69,7 @@ final class OAuthEventHandler
             'version'    => $version,
             'warnings'   => $warnings,
             'diagnostic' => $report,
-            'message'    => $this->buildMessage('Приложение обновлено', $report, $version),
+            'message'    => $this->buildMessage('Приложение обновлено', $report, $version, $warnings),
         ];
     }
 
@@ -111,7 +111,7 @@ final class OAuthEventHandler
             }
         }
 
-        $warnings = $this->install->install($client);
+        $warnings = $this->install->install($client, $portalId);
         $report = (new RestPermissionsDiagnostic($client, $portalId))->run();
 
         return [
@@ -124,6 +124,8 @@ final class OAuthEventHandler
             'message'    => $this->buildMessage(
                 $wasInstalled ? 'Приложение переустановлено' : 'Приложение установлено',
                 $report,
+                '',
+                $warnings,
             ),
         ];
     }
@@ -149,11 +151,21 @@ final class OAuthEventHandler
     }
 
     /** @param array<string, mixed> $report */
-    private function buildMessage(string $prefix, array $report, string $version = ''): string
+    /** @param list<string> $warnings */
+    private function buildMessage(string $prefix, array $report, string $version = '', array $warnings = []): string
     {
         $message = $prefix;
         if ($version !== '') {
             $message .= ' (версия ' . $version . ')';
+        }
+
+        $disk = $report['disk_xml_folder'] ?? null;
+        if (is_array($disk) && !empty($disk['ok']) && (int)($disk['folder_id'] ?? 0) > 0) {
+            $message .= "\n\nПапка /XML/ на общем Диске B24: готова (ID " . (int)$disk['folder_id'] . ')';
+        }
+
+        if ($warnings !== []) {
+            $message .= "\n\n--- Предупреждения установки ---\n" . implode("\n", $warnings);
         }
 
         if (!($report['ready_for_generation'] ?? false)) {

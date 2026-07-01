@@ -26,6 +26,9 @@ class GenerateResult implements GenerateResultInterface
         private readonly string $entityType = '',
         private readonly int $entityId = 0,
         private readonly int $entityTypeId = 0,
+        private readonly string $ufFileKey = '',
+        private readonly string $ufNumberKey = '',
+        private readonly bool $useOriginalUfNames = false,
     ) {
     }
 
@@ -65,6 +68,9 @@ class GenerateResult implements GenerateResultInterface
         string $entityType,
         int $entityId,
         int $entityTypeId,
+        string $ufFileKey = '',
+        string $ufNumberKey = '',
+        bool $useOriginalUfNames = false,
     ): self {
         return new self(
             true,
@@ -85,6 +91,9 @@ class GenerateResult implements GenerateResultInterface
             $entityType,
             $entityId,
             $entityTypeId,
+            $ufFileKey,
+            $ufNumberKey,
+            $useOriginalUfNames,
         );
     }
 
@@ -151,6 +160,12 @@ class GenerateResult implements GenerateResultInterface
                 'EntityId'       => $this->entityId,
                 'entityTypeId'   => $this->entityTypeId,
                 'EntityTypeId'   => $this->entityTypeId,
+                'ufFileKey'      => $this->ufFileKey,
+                'UfFileKey'      => $this->ufFileKey,
+                'ufNumberKey'    => $this->ufNumberKey,
+                'UfNumberKey'    => $this->ufNumberKey,
+                'useOriginalUfNames' => $this->useOriginalUfNames,
+                'UseOriginalUfNames' => $this->useOriginalUfNames,
                 'version'     => $this->version,
                 'Version'     => $this->version,
                 'encoding'    => $this->encoding,

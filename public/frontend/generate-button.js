@@ -91,12 +91,29 @@
         return 0;
     }
 
-    function ensureXmlFolder() {
-        return callMethod('disk.storage.getforapp', {}).then(function (storage) {
-            var storageId = parseInt(storage.ID, 10);
-            if (!storageId) {
-                throw new Error('Не найдено хранилище Диска приложения');
+    function resolveCommonStorageId() {
+        return callMethod('disk.storage.getlist', {
+            filter: { ENTITY_TYPE: 'common' },
+            order: { ID: 'ASC' }
+        }).then(function (list) {
+            if (!Array.isArray(list)) {
+                list = [];
             }
+            for (var i = 0; i < list.length; i++) {
+                var storage = list[i] || {};
+                if (storage.ENTITY_TYPE === 'common') {
+                    var storageId = parseInt(storage.ID, 10);
+                    if (storageId > 0) {
+                        return storageId;
+                    }
+                }
+            }
+            throw new Error('Не найдено общее хранилище Диска на портале');
+        });
+    }
+
+    function ensureXmlFolder() {
+        return resolveCommonStorageId().then(function (storageId) {
             return callMethod('disk.storage.getchildren', { id: storageId }).then(function (children) {
                 var folderId = findXmlFolderId(children);
                 if (folderId > 0) {
@@ -113,39 +130,54 @@
                         if (retryId > 0) {
                             return retryId;
                         }
-                        throw new Error('Не удалось создать папку /XML/ на Диске');
+                        throw new Error('Не удалось создать папку /XML/ на общем Диске');
                     });
                 });
             });
         });
     }
 
-    function attachFileToEntity(data, fileId) {
+    function attachFileToEntity(data) {
         var resolvedType = data.EntityType || data.entityType || entityType;
         var resolvedId = parseInt(data.EntityId || data.entityId || 0, 10);
         var docNumber = data.DocNumber || data.docNumber || '';
         var entityTypeId = parseInt(data.EntityTypeId || data.entityTypeId || 0, 10);
+        var fileName = data.FileName || data.fileName || data.StorageFileName || data.storageFileName || 'UPD.xml';
+        var xmlBase64 = data.XmlBase64 || data.xmlBase64 || '';
+        var fileKey = data.UfFileKey || data.ufFileKey || 'UF_UPD_FILE';
+        var numberKey = data.UfNumberKey || data.ufNumberKey || 'UF_UPD_NUMBER';
+        var useOriginalUfNames = !!(data.UseOriginalUfNames || data.useOriginalUfNames);
+
+        if (!xmlBase64) {
+            return Promise.reject(new Error('Нет данных файла для записи в поле UF_UPD_FILE'));
+        }
+        if (resolvedId <= 0) {
+            return Promise.reject(new Error('Не указан ID сущности CRM'));
+        }
 
         if (resolvedType === 'deal' || resolvedType === 'DEAL') {
-            var fields = { UF_UPD_FILE: ['disk_file_' + fileId] };
-            if (docNumber) {
-                fields.UF_UPD_NUMBER = docNumber;
-            }
-            return callMethod('crm.deal.update', { id: resolvedId, fields: fields });
+            useOriginalUfNames = true;
+            entityTypeId = 2;
+            fileKey = 'UF_UPD_FILE';
+            numberKey = 'UF_UPD_NUMBER';
         }
 
-        var fileKey = 'ufCrm_UPD_FILE';
-        var numberKey = 'ufCrm_UPD_NUMBER';
-        var updateFields = {};
-        updateFields[fileKey] = ['disk_file_' + fileId];
+        var fields = {};
+        fields[fileKey] = [fileName, xmlBase64];
         if (docNumber) {
-            updateFields[numberKey] = docNumber;
+            fields[numberKey] = docNumber;
         }
-        return callMethod('crm.item.update', {
-            entityTypeId: entityTypeId,
+
+        var params = {
+            entityTypeId: entityTypeId > 0 ? entityTypeId : 2,
             id: resolvedId,
-            fields: updateFields
-        });
+            fields: fields
+        };
+        if (useOriginalUfNames) {
+            params.useOriginalUfNames = 'Y';
+        }
+
+        return callMethod('crm.item.update', params);
     }
 
     function uploadXmlToDisk(data) {
@@ -167,7 +199,7 @@
             if (fileId <= 0) {
                 throw new Error('Не удалось загрузить файл на Диск B24');
             }
-            return attachFileToEntity(data, fileId).then(function () {
+            return attachFileToEntity(data).then(function () {
                 return {
                     FileId: fileId,
                     fileId: fileId,

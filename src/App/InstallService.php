@@ -22,8 +22,9 @@ final class InstallService
     private array $userFieldLog = [];
 
     /** @return list<string> предупреждения (установка считается успешной) */
-    public function install(BitrixClient $client): array
+    public function install(BitrixClient $client, int $portalId = 0): array
     {
+        $portalId = $portalId > 0 ? $portalId : $client->portalId();
         $smartTypeId = $this->detectSmartInvoiceTypeId($client);
         $smartMeta = UserFieldCodes::resolveSmartType($client, $smartTypeId);
         $warnings = [];
@@ -31,7 +32,14 @@ final class InstallService
         $this->installUserFields($client, $smartTypeId);
 
         try {
-            (new AppDiskService($client, new SettingsRepository(), $client->portalId()))->ensureXmlFolder();
+            if ($portalId <= 0) {
+                throw new \RuntimeException('Портал не сохранён в БД — невозможно создать папку /XML/');
+            }
+
+            $folderId = (new AppDiskService($client, new SettingsRepository(), $portalId))->ensureXmlFolder();
+            if ($folderId <= 0) {
+                throw new \RuntimeException('Не удалось создать папку /XML/ на Диске B24');
+            }
         } catch (\Throwable $e) {
             $warnings[] = $this->formatStepError('disk/XML', $e);
         }
@@ -49,7 +57,7 @@ final class InstallService
         }
 
         $warnings = array_merge($warnings, $this->bindPlacements($client, $smartMeta));
-        $warnings = array_merge($warnings, (new MenuPlacementService())->bindLeftMenu($client));
+        $warnings = array_merge($warnings, (new AppBranding())->apply($client));
         $this->seedDefaultSettings($client->portalId(), $smartTypeId, $smartMeta);
 
         return $warnings;

@@ -6,14 +6,16 @@ namespace Ooofix\XmlupdCloud\Rest;
 
 use Ooofix\XmlupdCloud\Storage\SettingsRepository;
 
-/** Папка XML на Диске приложения Bitrix24 (disk.storage.getforapp). */
+/** Папка XML на общем Диске портала Bitrix24 (disk.storage.getlist, ENTITY_TYPE=common). */
 final class AppDiskService
 {
     public const FOLDER_NAME = 'XML';
 
     public const SETTING_FOLDER_ID = 'disk_xml_folder_id';
 
-    public const SETTING_STORAGE_ID = 'disk_app_storage_id';
+    public const SETTING_STORAGE_ID = 'disk_common_storage_id';
+
+    private const STORAGE_ENTITY_TYPE = 'common';
 
     public function __construct(
         private readonly BitrixClient $client,
@@ -22,35 +24,71 @@ final class AppDiskService
     ) {
     }
 
-    /** Создать или найти папку /XML/ в хранилище приложения. */
+    /** Создать или найти папку /XML/ в корне общего хранилища Диска. */
     public function ensureXmlFolder(): int
     {
+        if ($this->portalId <= 0) {
+            throw new \RuntimeException('Не определён portal_id для настройки папки /XML/');
+        }
+
+        $storageId = $this->resolveCommonStorageId();
+
         $cached = (int)$this->settings->get($this->portalId, self::SETTING_FOLDER_ID, '0');
-        if ($cached > 0) {
+        if ($cached > 0 && $this->isXmlFolder($cached, $storageId)) {
             return $cached;
         }
 
-        $storage = $this->client->result('disk.storage.getforapp', []);
-        if (!is_array($storage)) {
-            throw new \RuntimeException('Не удалось получить хранилище приложения на Диске B24');
-        }
-
-        $storageId = (int)($storage['ID'] ?? 0);
-        if ($storageId <= 0) {
-            throw new \RuntimeException('Не найдено хранилище Диска приложения');
+        if ($cached > 0) {
+            $this->settings->saveAll($this->portalId, [
+                self::SETTING_FOLDER_ID  => '0',
+                self::SETTING_STORAGE_ID => '0',
+            ]);
         }
 
         $folderId = $this->findOrCreateXmlFolder($storageId);
         if ($folderId <= 0) {
-            throw new \RuntimeException('Не удалось создать папку ' . self::FOLDER_NAME . ' на Диске B24');
+            throw new \RuntimeException('Не удалось создать папку ' . self::FOLDER_NAME . ' на общем Диске B24');
         }
 
         $this->settings->saveAll($this->portalId, [
-            self::SETTING_FOLDER_ID   => (string)$folderId,
-            self::SETTING_STORAGE_ID  => (string)$storageId,
+            self::SETTING_FOLDER_ID  => (string)$folderId,
+            self::SETTING_STORAGE_ID => (string)$storageId,
         ]);
 
         return $folderId;
+    }
+
+    private function resolveCommonStorageId(): int
+    {
+        $cached = (int)$this->settings->get($this->portalId, self::SETTING_STORAGE_ID, '0');
+        if ($cached > 0 && $this->isCommonStorage($cached)) {
+            return $cached;
+        }
+
+        $storages = $this->client->result('disk.storage.getlist', [
+            'filter' => ['ENTITY_TYPE' => self::STORAGE_ENTITY_TYPE],
+            'order'  => ['ID' => 'ASC'],
+        ]);
+
+        if (!is_array($storages)) {
+            throw new \RuntimeException('Не удалось получить список хранилищ Диска B24');
+        }
+
+        foreach ($storages as $storage) {
+            if (!is_array($storage)) {
+                continue;
+            }
+            if (($storage['ENTITY_TYPE'] ?? '') !== self::STORAGE_ENTITY_TYPE) {
+                continue;
+            }
+
+            $storageId = (int)($storage['ID'] ?? 0);
+            if ($storageId > 0) {
+                return $storageId;
+            }
+        }
+
+        throw new \RuntimeException('Не найдено общее хранилище Диска на портале (ENTITY_TYPE=common)');
     }
 
     private function findOrCreateXmlFolder(int $storageId): int
@@ -96,6 +134,22 @@ final class AppDiskService
         return 0;
     }
 
+    private function isCommonStorage(int $storageId): bool
+    {
+        if ($storageId <= 0) {
+            return false;
+        }
+
+        try {
+            $storage = $this->client->result('disk.storage.get', ['id' => $storageId]);
+
+            return is_array($storage)
+                && ($storage['ENTITY_TYPE'] ?? '') === self::STORAGE_ENTITY_TYPE;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     private function isFolderAlreadyExistsError(\Throwable $e): bool
     {
         $msg = mb_strtolower($e->getMessage());
@@ -103,5 +157,23 @@ final class AppDiskService
         return str_contains($msg, '22000')
             || str_contains($msg, 'уже')
             || str_contains($msg, 'already');
+    }
+
+    private function isXmlFolder(int $folderId, int $storageId): bool
+    {
+        if ($folderId <= 0) {
+            return false;
+        }
+
+        try {
+            $folder = $this->client->result('disk.folder.get', ['id' => $folderId]);
+
+            return is_array($folder)
+                && ($folder['TYPE'] ?? '') === 'folder'
+                && ($folder['NAME'] ?? '') === self::FOLDER_NAME
+                && (int)($folder['STORAGE_ID'] ?? 0) === $storageId;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 }

@@ -35,9 +35,12 @@ final class RestPermissionsDiagnostic
             'params' => [],
         ],
         'disk' => [
-            'title'  => 'Диск приложения',
-            'method' => 'disk.storage.getforapp',
-            'params' => [],
+            'title'  => 'Общий Диск',
+            'method' => 'disk.storage.getlist',
+            'params' => [
+                'filter' => ['ENTITY_TYPE' => 'common'],
+                'order'  => ['ID' => 'ASC'],
+            ],
         ],
         'bizproc' => [
             'title'  => 'Бизнес-процессы (роботы)',
@@ -77,7 +80,10 @@ final class RestPermissionsDiagnostic
         }
 
         $dbClient = new BitrixClient($this->client->domain());
-        $dbDiskProbe = $dbClient->probe('disk.storage.getforapp', []);
+        $dbDiskProbe = $dbClient->probe('disk.storage.getlist', [
+            'filter' => ['ENTITY_TYPE' => 'common'],
+            'order'  => ['ID' => 'ASC'],
+        ]);
 
         $blocking = [];
         foreach ($probes as $scope => $probe) {
@@ -159,7 +165,7 @@ final class RestPermissionsDiagnostic
             return [
                 'ok'        => false,
                 'folder_id' => 0,
-                'message'   => 'Пропущено: нет доступа к disk.storage.getforapp',
+                'message'   => 'Пропущено: нет доступа к disk.storage.getlist (общий Диск)',
             ];
         }
 
@@ -173,7 +179,7 @@ final class RestPermissionsDiagnostic
             return [
                 'ok'        => $folderId > 0,
                 'folder_id' => $folderId,
-                'message'   => $folderId > 0 ? 'Папка /XML/ на Диске готова' : 'Не удалось создать папку /XML/',
+                'message'   => $folderId > 0 ? 'Папка /XML/ на общем Диске готова' : 'Не удалось создать папку /XML/ на общем Диске',
             ];
         } catch (\Throwable $e) {
             return [
@@ -268,7 +274,7 @@ final class RestPermissionsDiagnostic
         array $tokenScopes,
     ): string {
         if ($ready) {
-            return 'REST-права в порядке: генерация УПД и папка /XML/ на Диске доступны.';
+            return 'REST-права в порядке: генерация УПД и папка /XML/ на общем Диске доступны.';
         }
 
         if ($missingScopes !== []) {
@@ -278,14 +284,13 @@ final class RestPermissionsDiagnostic
 
         if ($manifestComplete && $blocking !== [] && $tokenScopes !== []) {
             return 'На vendors все нужные scope указаны, но REST-методы недоступны с текущим токеном. '
-                . 'Переустановите приложение от имени администратора портала. '
-                . 'disk.storage.getforapp работает только в контексте приложения и требует прав администратора.';
+                . 'Переустановите приложение от имени администратора портала с правами на общий Диск.';
         }
 
         if (in_array('disk', $blocking, true)) {
             $diskError = (string)($probes['disk']['error'] ?? '');
 
-            return 'Метод disk.storage.getforapp недоступен'
+            return 'Метод disk.storage.getlist (общий Диск) недоступен'
                 . ($diskError !== '' ? ': ' . $diskError : '')
                 . '. Установите приложение администратором портала; для кнопки в CRM файл сохраняется через BX24 в iframe.';
         }
@@ -358,7 +363,7 @@ final class RestPermissionsDiagnostic
         }
 
         if (in_array('disk', $blocking, true)) {
-            $steps[] = 'disk.storage.getforapp: только контекст приложения + администратор портала. '
+            $steps[] = 'disk.storage.getlist (общий Диск): нужен scope disk и права администратора на общий Диск портала. '
                 . 'Кнопка «Сформировать УПД» сохраняет файл через BX24 в iframe, даже если серверный токен без disk.';
             if (!($dbDiskProbe['ok'] ?? false)) {
                 $steps[] = 'Токен в БД (для робота/очереди) тоже без disk — обновите приложение на портале.';
@@ -425,8 +430,12 @@ final class RestPermissionsDiagnostic
         }
 
         $disk = $report['disk_xml_folder'] ?? null;
-        if (is_array($disk) && empty($disk['ok'])) {
-            $lines[] = 'Папка /XML/: ' . (string)($disk['message'] ?? 'не создана');
+        if (is_array($disk)) {
+            if (!empty($disk['ok']) && (int)($disk['folder_id'] ?? 0) > 0) {
+                $lines[] = 'Папка /XML/ (общий Диск): готова (ID ' . (int)$disk['folder_id'] . ')';
+            } else {
+                $lines[] = 'Папка /XML/ (общий Диск): ' . (string)($disk['message'] ?? 'не создана');
+            }
         }
 
         $lines[] = '';

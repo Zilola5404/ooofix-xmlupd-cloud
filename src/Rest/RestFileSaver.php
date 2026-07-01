@@ -10,10 +10,10 @@ use Ooofix\XmlupdCloud\Core\XmlEncoder;
 use Ooofix\XmlupdCloud\Storage\DocumentRepository;
 use Ooofix\XmlupdCloud\Storage\SettingsRepository;
 
-/** Сохранение XML в папку /XML/ на Диске B24 и запись в UF_UPD_FILE. */
+/** Сохранение XML в папку /XML/ на общем Диске B24 и запись в UF_UPD_FILE. */
 final class RestFileSaver
 {
-    public const BUILD_MARKER = 'disk-xml-folder-v3';
+    public const BUILD_MARKER = 'crm-item-uf-file-v1';
 
     public function __construct(
         private readonly BitrixClient $client,
@@ -38,10 +38,18 @@ final class RestFileSaver
         $upload = $this->uploadToXmlFolder($storageName, $xmlContent);
         $fileId = $upload['fileId'];
         if ($fileId <= 0) {
-            throw new \RuntimeException('Не удалось сохранить файл в папку /XML/ на Диске B24');
+            throw new \RuntimeException('Не удалось сохранить файл в папку /XML/ на общем Диске B24');
         }
 
-        $this->attachToEntity($entityType, $entityId, $entityTypeId, $fileId, $docNumber);
+        (new CrmUserFieldAttacher())->attachUpdFile(
+            $this->client,
+            $entityType,
+            $entityId,
+            $entityTypeId,
+            $fileName,
+            $xmlContent,
+            $docNumber,
+        );
 
         $this->documents->add(
             $entityType,
@@ -133,49 +141,6 @@ final class RestFileSaver
             'downloadUrl' => (string)($uploaded['DOWNLOAD_URL'] ?? ''),
             'detailUrl'   => (string)($uploaded['DETAIL_URL'] ?? ''),
         ];
-    }
-
-    private function attachToEntity(
-        string $entityType,
-        int $entityId,
-        int $entityTypeId,
-        int $diskFileId,
-        string $docNumber,
-    ): void {
-        if ($entityType === RestDataCollector::TYPE_DEAL) {
-            $fields = [
-                'UF_UPD_FILE' => ['disk_file_' . $diskFileId],
-            ];
-            if ($docNumber !== '') {
-                $fields['UF_UPD_NUMBER'] = $docNumber;
-            }
-
-            $this->client->call('crm.deal.update', [
-                'id'     => $entityId,
-                'fields' => $fields,
-            ]);
-
-            return;
-        }
-
-        $spaId = Config::smartInvoiceSpaId();
-        $ufFileKey = $spaId > 0
-            ? UserFieldCodes::smartItemFieldKey($spaId, UserFieldCodes::SUFFIX_FILE)
-            : 'ufCrm_UPD_FILE';
-        $ufNumberKey = $spaId > 0
-            ? UserFieldCodes::smartItemFieldKey($spaId, UserFieldCodes::SUFFIX_NUMBER)
-            : 'ufCrm_UPD_NUMBER';
-
-        $fields = [$ufFileKey => ['disk_file_' . $diskFileId]];
-        if ($docNumber !== '') {
-            $fields[$ufNumberKey] = $docNumber;
-        }
-
-        $this->client->call('crm.item.update', [
-            'entityTypeId' => $entityTypeId,
-            'id'           => $entityId,
-            'fields'       => $fields,
-        ]);
     }
 
     private function publishTimeline(int $entityTypeId, int $entityId, string $fileName): void

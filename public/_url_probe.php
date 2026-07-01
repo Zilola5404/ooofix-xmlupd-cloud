@@ -54,6 +54,30 @@ function ooofix_cloud_install_set_title_js(): string
 JS;
 }
 
+function ooofix_cloud_install_logo_js(): string
+{
+    if (!class_exists(\Ooofix\XmlupdCloud\App\AppBranding::class)
+        || !\Ooofix\XmlupdCloud\App\AppBranding::logoExists()) {
+        return '';
+    }
+
+    $logoUrl = json_encode(\Ooofix\XmlupdCloud\App\AppBranding::logoUrl(), JSON_UNESCAPED_UNICODE);
+
+    return "if (typeof BX24.setIcon === 'function') { BX24.setIcon({$logoUrl}); }";
+}
+
+function ooofix_cloud_install_head_icon(): string
+{
+    if (!class_exists(\Ooofix\XmlupdCloud\App\AppBranding::class)
+        || !\Ooofix\XmlupdCloud\App\AppBranding::logoExists()) {
+        return '';
+    }
+
+    return '<link rel="icon" type="image/png" href="'
+        . htmlspecialchars(\Ooofix\XmlupdCloud\App\AppBranding::logoUrl(), ENT_QUOTES, 'UTF-8')
+        . '">';
+}
+
 function ooofix_cloud_url_probe_exit_if_needed(bool $bareGetOkPage = true): void
 {
     $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
@@ -82,12 +106,15 @@ function ooofix_cloud_render_install_client(): never
     header('Content-Type: text/html; charset=utf-8');
     $title = htmlspecialchars(ooofix_cloud_app_title(), ENT_QUOTES, 'UTF-8');
     $setTitleJs = ooofix_cloud_install_set_title_js();
+    $logoJs = ooofix_cloud_install_logo_js();
+    $headIcon = ooofix_cloud_install_head_icon();
     echo <<<HTML
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8">
     <title>{$title}</title>
+    {$headIcon}
     <script src="https://api.bitrix24.com/api/v1/"></script>
 </head>
 <body>
@@ -131,6 +158,7 @@ BX24.init(function () {
         }
         document.getElementById('msg').textContent = '«{$title}» установлено';
         {$setTitleJs}
+        {$logoJs}
         BX24.installFinish();
     })
     .catch(function (e) {
@@ -152,12 +180,15 @@ function ooofix_cloud_render_install_finish(string $message = ''): never
     $text = htmlspecialchars($message !== '' ? $message : 'Установка завершена', ENT_QUOTES, 'UTF-8');
     $title = htmlspecialchars($appTitle, ENT_QUOTES, 'UTF-8');
     $setTitleJs = ooofix_cloud_install_set_title_js();
+    $logoJs = ooofix_cloud_install_logo_js();
+    $headIcon = ooofix_cloud_install_head_icon();
     echo <<<HTML
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="utf-8">
     <title>{$title}</title>
+    {$headIcon}
     <script src="https://api.bitrix24.com/api/v1/"></script>
 </head>
 <body>
@@ -165,6 +196,7 @@ function ooofix_cloud_render_install_finish(string $message = ''): never
 <script>
 BX24.init(function () {
     {$setTitleJs}
+    {$logoJs}
     BX24.installFinish();
 });
 </script>

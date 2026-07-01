@@ -18,6 +18,7 @@ use Ooofix\XmlupdCloud\Rest\BitrixClient;
 use Ooofix\XmlupdCloud\Rest\RestDataCollector;
 use Ooofix\XmlupdCloud\Rest\RestFileSaver;
 use Ooofix\XmlupdCloud\Rest\TriggerService;
+use Ooofix\XmlupdCloud\Rest\UserFieldCodes;
 use Ooofix\XmlupdCloud\Storage\DocumentRepository;
 
 /**
@@ -94,6 +95,8 @@ final class GenerateService
                     $entityId
                 );
 
+                [$ufFileKey, $ufNumberKey, $useOriginalUfNames] = $this->resolveUfItemKeys($entityType);
+
                 return GenerateResult::okClientDisk(
                     base64_encode($xmlContent),
                     $fileName,
@@ -104,6 +107,9 @@ final class GenerateService
                     $entityType,
                     $entityId,
                     $entityTypeId,
+                    $ufFileKey,
+                    $ufNumberKey,
+                    $useOriginalUfNames,
                 );
             }
 
@@ -111,7 +117,7 @@ final class GenerateService
             $file = $fileSaver->save($entityType, $entityId, $entityTypeId, $xml, $docNumber);
 
             Logger::success(
-                sprintf('УПД сформирован: %s, версия %d (Диск B24 /XML/)', $file['fileName'], $file['version'] ?? 1),
+                sprintf('УПД сформирован: %s, версия %d (общий Диск B24 /XML/)', $file['fileName'], $file['version'] ?? 1),
                 $entityType,
                 $entityId
             );
@@ -144,5 +150,21 @@ final class GenerateService
             EntityContextDto::from($entityType, $entityId, $ownerTypeId),
             $checkPermissions
         );
+    }
+
+    /** @return array{0: string, 1: string, 2: bool} */
+    private function resolveUfItemKeys(string $entityType): array
+    {
+        if ($entityType === RestDataCollector::TYPE_DEAL) {
+            return [UserFieldCodes::DEAL_FILE, UserFieldCodes::DEAL_NUMBER, true];
+        }
+
+        $spaId = Config::smartInvoiceSpaId();
+
+        return [
+            UserFieldCodes::smartItemFieldKey($spaId, UserFieldCodes::SUFFIX_FILE),
+            UserFieldCodes::smartItemFieldKey($spaId, UserFieldCodes::SUFFIX_NUMBER),
+            false,
+        ];
     }
 }
