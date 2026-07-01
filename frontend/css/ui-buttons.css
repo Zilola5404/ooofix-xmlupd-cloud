@@ -1,0 +1,223 @@
+/**
+ * Минимальные стили ui-btn (Bitrix24) для облачного iframe без Extension::load.
+ */
+.ui-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 16px;
+    min-height: 34px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.ui-btn-md {
+    min-height: 34px;
+    padding: 0 18px;
+}
+
+.ui-btn-xs {
+    min-height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
+}
+
+.ui-btn-primary {
+    background: #2fc6f6;
+    border-color: #2fc6f6;
+    color: #fff;
+}
+
+.ui-btn-primary:hover {
+    background: #1aabdc;
+    border-color: #1aabdc;
+    color: #fff;
+}
+
+.ui-btn-light-border {
+    background: #fff;
+    border-color: #c6cdd3;
+    color: #535c69;
+}
+
+.ui-btn-light-border:hover {
+    background: #f8fafb;
+    border-color: #b5bcc3;
+    color: #333;
+}
+
+.ui-btn-link,
+.ui-btn-link.ui-btn-xs {
+    background: transparent;
+    border-color: transparent;
+    color: #828b95;
+    box-shadow: none;
+}
+
+.ui-btn-link:hover {
+    color: #e24b4a;
+    background: transparent;
+}
+
+.ui-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.ui-btn:active:not(:disabled) {
+    transform: translateY(1px);
+}
+
+.ui-btn-primary:focus-visible,
+.ui-btn-light-border:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(47, 198, 246, 0.25);
+}
+
+.ui-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+}
+
+.ui-alert-message {
+    flex: 1;
+}
+
+.ui-alert-success {
+    background: #edf8ed;
+    border: 1px solid #b8e0b8;
+    color: #2a7a2a;
+}
+
+.ui-alert-warning {
+    background: #fff8e6;
+    border: 1px solid #f0d89a;
+    color: #8a6d1a;
+}
+
+.ui-alert-danger {
+    background: #fdecea;
+    border: 1px solid #f5c6c0;
+    color: #c0392b;
+}
+
+.ox-xml-portal__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin: 0 0 20px;
+    padding: 4px;
+    border: 1px solid #e3e8ee;
+    border-radius: 8px;
+    background: #fff;
+    list-style: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.ox-xml-portal__nav a {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 16px;
+    color: #525c69;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.2;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.ox-xml-portal__nav a:hover {
+    color: #333;
+    background: #f5f7f8;
+}
+
+.ox-xml-portal__nav a.is-active {
+    color: #333;
+    font-weight: 600;
+    background: #eef9fd;
+    border-color: #c5e8f5;
+    box-shadow: inset 0 0 0 1px rgba(47, 198, 246, 0.15);
+}
+
+body.ox-cloud-app {
+    margin: 0;
+    background: #eef2f4;
+    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.ox-cloud-app--settings {
+    background: #eef2f4;
+}
+
+.ox-xml-portal__header {
+    margin-bottom: 16px;
+}
+
+.ox-cloud-app .ox-xml-portal__title {
+    margin: 0 0 6px;
+    font-size: 22px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.25;
+}
+
+.ox-cloud-app .ox-xml-portal__subtitle {
+    margin: 0;
+    font-size: 13px;
+    color: #828b95;
+    line-height: 1.45;
+    max-width: 640px;
+}
+
+.ox-cloud-app .ox-upd-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 48px 16px;
+    text-align: center;
+    color: #828b95;
+    font-size: 14px;
+}
+
+.ox-upd-loading__spinner {
+    width: 28px;
+    height: 28px;
+    border: 2px solid #dce2e8;
+    border-top-color: #2fc6f6;
+    border-radius: 50%;
+    animation: ox-upd-spin 0.7s linear infinite;
+}
+
+@keyframes ox-upd-spin {
+    to { transform: rotate(360deg); }
+}
+
+.ox-cloud-app .ox-upd-error {
+    padding: 24px 16px;
+    text-align: center;
+    color: #e53935;
+    font-size: 14px;
+}

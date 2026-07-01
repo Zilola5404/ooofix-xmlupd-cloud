@@ -1,0 +1,13 @@
+# Секреты (не коммитить)
+.env
+
+# Локальные XML (fallback без scope disk)
+var/
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+Thumbs.db
+Desktop.ini

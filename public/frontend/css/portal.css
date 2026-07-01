@@ -1,0 +1,97 @@
+.ox-xml-portal-wrapper {
+    background: transparent;
+    min-height: auto;
+}
+
+body.ox-xml-portal-page .ui-toolbar.ox-xml-portal-toolbar {
+    display: none !important;
+}
+
+.ox-xml-portal-wrapper .ui-page-slider-workarea {
+    background: transparent;
+}
+
+.ox-xml-portal__page {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.ox-xml-portal {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 12px 8px 24px;
+}
+
+.ox-xml-portal__content {
+    min-height: 200px;
+}
+
+.ox-xml-grid-wrap {
+    overflow-x: auto;
+    border: 1px solid #e3e8ee;
+    border-radius: 10px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.ox-xml-grid {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.ox-xml-grid th,
+.ox-xml-grid td {
+    padding: 7px 10px;
+    border-bottom: 1px solid #eef1f5;
+    text-align: left;
+    vertical-align: top;
+}
+
+.ox-xml-grid th {
+    background: #f8fafb;
+    font-weight: 600;
+    font-size: 12px;
+    color: #6b7785;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.ox-xml-grid tbody tr:hover td {
+    background: #fafcfd;
+}
+
+.ox-xml-grid__empty {
+    text-align: center;
+    color: #8a96a3;
+    padding: 16px !important;
+}
+
+.ox-xml-grid a {
+    color: #2067b0;
+    text-decoration: none;
+}
+
+.ox-xml-grid a:hover {
+    text-decoration: underline;
+}
+
+.ox-xml-grid-filter {
+    margin-bottom: 8px;
+}
+
+.ox-xml-grid-filter__row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .ox-xml-portal {
+        padding: 0 4px;
+    }
+}

@@ -1,0 +1,10 @@
+Официальные XSD-схемы ФНС России (приказ ЕД-7-26/970@, формат 5.03 / 5.02).
+Источник: https://www.nalog.gov.ru/rn77/about_fts/docs/14414412/
+Скачаны локально — модуль не обращается в интернет при валидации.
+
+5.03/ON_NSCHFDOPPR_1_997_01_05_03_04.xsd — xsd14414412.zip
+5.03/ON_NSCHFDOPPR_1_997_01_05_03_05.xsd — 14414412.zip (редакция с 01.01.2026)
+5.03/ON_NSCHFDOPPOK_1_997_02_05_03_01.xsd — титул покупателя
+5.02/* — pril_14414412.zip
+
+Документация Диадoc API (форматы): https://developer.kontur.ru/doc/diadoc-api/docflows/formats.html#xsd

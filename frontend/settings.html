@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генерация XML (УПД) — настройки</title>
+    <script>window.OX_CLOUD_APP_TITLE = 'Генерация XML (УПД)';</script>
+    <link rel="stylesheet" href="frontend/css/ui-buttons.css">
+    <link rel="stylesheet" href="frontend/css/ui-forms.css">
+    <link rel="stylesheet" href="frontend/css/portal.css">
+    <link rel="stylesheet" href="frontend/css/settings.css">
+    <script src="https://api.bitrix24.com/api/v1/"></script>
+    <script src="frontend/api-auth.js"></script>
+    <script src="frontend/bitrix-shell.js"></script>
+</head>
+<body class="ox-cloud-app ox-cloud-app--settings">
+<div class="ui-page-slider-wrapper ox-xml-portal-wrapper">
+    <div class="ui-page-slider-workarea">
+        <div class="ui-slider-page ox-xml-portal__page">
+            <div class="ox-xml-portal">
+                <header class="ox-xml-portal__header">
+                    <h1 class="ox-xml-portal__title">Генерация XML (УПД)</h1>
+                    <p class="ox-xml-portal__subtitle">Настройте организацию, CRM и параметры формирования документов</p>
+                </header>
+                <nav class="ox-xml-portal__nav" aria-label="Разделы">
+                    <a href="index.php?page=settings" class="is-active">Настройки</a>
+                    <a href="index.php?page=documents">Документы</a>
+                    <a href="index.php?page=logs">Логи</a>
+                </nav>
+                <div class="ox-xml-portal__content">
+                    <div id="settings-root">
+                        <div class="ox-upd-loading" aria-live="polite">
+                            <span class="ox-upd-loading__spinner" aria-hidden="true"></span>
+                            <span>Загрузка настроек…</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="frontend/settings.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Генерация XML (УПД) — логи</title>
+    <script>window.OX_CLOUD_APP_TITLE = 'Генерация XML (УПД)';</script>
+    <link rel="stylesheet" href="frontend/css/ui-buttons.css">
+    <link rel="stylesheet" href="frontend/css/portal.css">
+    <script src="https://api.bitrix24.com/api/v1/"></script>
+    <script src="frontend/api-auth.js"></script>
+    <script src="frontend/bitrix-shell.js"></script>
+</head>
+<body class="ox-cloud-app">
+<div class="ui-page-slider-wrapper ox-xml-portal-wrapper">
+    <div class="ui-page-slider-workarea">
+        <div class="ui-slider-page ox-xml-portal__page">
+            <div class="ox-xml-portal">
+                <h1 class="ox-xml-portal__title">Журнал операций</h1>
+                <nav class="ox-xml-portal__nav" aria-label="Разделы">
+                    <a href="index.php?page=settings">Настройки</a>
+                    <a href="index.php?page=documents">Документы</a>
+                    <a href="index.php?page=logs" class="is-active">Логи</a>
+                </nav>
+                <div class="ox-xml-portal__content">
+                    <div class="ox-xml-grid-wrap">
+                        <table class="ox-xml-grid" id="logs-table">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Тип</th>
+                                <th>Сущность</th>
+                                <th>Статус</th>
+                                <th>Сообщение</th>
+                                <th>Дата</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr><td colspan="6" class="ox-xml-grid__empty">Загрузка…</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="frontend/portal-pages.js"></script>
+<script>OX_CLOUD_PAGES.initLogs();</script>
+</body>
+</html>

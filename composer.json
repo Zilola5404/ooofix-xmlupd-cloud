@@ -1,0 +1,18 @@
+{
+    "name": "ooofix/xmlupd-cloud",
+    "description": "Облачное REST-приложение Битрикс24: генерация XML УПД",
+    "type": "project",
+    "require": {
+        "php": ">=8.1",
+        "ext-dom": "*",
+        "ext-iconv": "*",
+        "ext-json": "*",
+        "ext-pdo": "*",
+        "ext-curl": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Ooofix\\XmlupdCloud\\": "src/"
+        }
+    }
+}

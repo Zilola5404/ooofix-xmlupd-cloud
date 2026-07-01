@@ -1,0 +1,112 @@
+/**
+ * Bitrix24 ui-ctl / ui-form — стили полей (как в коробочном ooofix.xmlupd + ui.forms).
+ */
+.ui-ctl-w100 {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.ui-ctl-textbox,
+.ui-ctl-dropdown {
+    position: relative;
+    display: block;
+    box-sizing: border-box;
+}
+
+.ui-ctl-textbox .ui-ctl-element,
+.ui-ctl-dropdown .ui-ctl-element {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.ox-upd-settings .ui-ctl-textbox .ui-ctl-element {
+    background: #fff;
+    border: 1px solid #c6cdd3;
+    border-radius: 4px;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ox-upd-settings .ui-ctl-textbox .ui-ctl-element:hover {
+    border-color: #b5bcc3;
+}
+
+.ox-upd-settings .ui-ctl-textbox .ui-ctl-element:focus {
+    border-color: #2fc6f6;
+    box-shadow: 0 0 0 3px rgba(47, 198, 246, 0.18);
+}
+
+.ox-upd-settings .ui-ctl-dropdown .ui-ctl-element {
+    background: #fff;
+    border: 1px solid #c6cdd3;
+}
+
+.ox-upd-settings__field--focused .ui-ctl-element,
+.ox-upd-settings__field--focused .ox-upd-settings__crm-chip {
+    border-color: #2fc6f6;
+    box-shadow: 0 0 0 3px rgba(47, 198, 246, 0.18);
+}
+
+.ox-upd-settings__form-footer .ui-btn-primary {
+    min-width: 120px;
+    font-weight: 500;
+}
+
+.ox-upd-settings__form-footer .ui-btn-light-border {
+    font-weight: 500;
+}
+
+.ox-upd-settings__card-fields .ox-upd-settings__field + .ox-upd-settings__field {
+    border-top: 0;
+}
+
+.ox-upd-settings__card--primary .ox-upd-settings__card-title {
+    border-left-color: #2fc6f6;
+    color: #333;
+}
+
+.ox-upd-settings__card-desc {
+    margin: -8px 0 14px;
+    padding-left: 13px;
+    font-size: 12px;
+    color: #828b95;
+    line-height: 1.45;
+}
+
+.ox-upd-settings__checkbox:hover .ox-upd-settings__checkbox-box {
+    border-color: #2fc6f6;
+}
+
+.ox-upd-settings__crm-select.ui-btn-primary {
+    box-shadow: 0 1px 2px rgba(47, 198, 246, 0.25);
+}
+
+@media (max-width: 720px) {
+    .ox-upd-settings__form-footer .ui-btn {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+}
+
+.ox-perms-report__table {
+    width: 100%;
+    margin: 12px 0;
+    border-collapse: collapse;
+    font-size: 12px;
+}
+
+.ox-perms-report__table th,
+.ox-perms-report__table td {
+    padding: 6px 8px;
+    border: 1px solid #e0e4e8;
+    text-align: left;
+    vertical-align: top;
+}
+
+.ox-perms-report__steps {
+    margin: 10px 0 0 18px;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1.5;
+}

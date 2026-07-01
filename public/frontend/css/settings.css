@@ -1,0 +1,665 @@
+:root {
+    --ui-color-primary: #2fc6f6;
+    --ui-color-primary-hover: #1aabdc;
+    --field-hint-color: #888;
+    --field-label-color: #828b95;
+    --field-border: #d5d5d5;
+    --field-border-hover: #b5b5b5;
+    --field-text: #333;
+    --ox-upd-card-bg: #fff;
+    --ox-upd-border: #e5e5e5;
+    --ox-upd-radius: 4px;
+    --ox-upd-transition: 0.15s ease;
+}
+
+.ox-upd-settings {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 12px 24px;
+    box-sizing: border-box;
+    color: var(--field-text);
+}
+
+.ox-upd-settings--admin {
+    max-width: none;
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+.ox-upd-settings--sidepanel {
+    max-width: 100%;
+    padding: 0;
+}
+
+.ox-upd-settings--sidepanel .ox-upd-settings__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+@media (min-width: 1100px) {
+    .ox-upd-settings--sidepanel .ox-upd-settings__grid {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr) minmax(0, 1fr);
+    }
+
+    .ox-upd-settings--sidepanel .ox-upd-settings__card--primary {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+}
+
+.ox-upd-settings--sidepanel .ox-upd-settings__card--primary {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 960px) {
+    .ox-upd-settings--sidepanel .ox-upd-settings__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ox-upd-settings--sidepanel .ox-upd-settings__card--primary {
+        grid-column: auto;
+    }
+}
+
+.ox-upd-settings--portal {
+    padding-top: 0;
+}
+
+.ox-upd-settings__flash {
+    margin-bottom: 12px;
+}
+
+/* Форма: контент + footer в одном контейнере */
+.ox-upd-settings__form.settings-form {
+    background: var(--ox-upd-card-bg);
+    border: 1px solid var(--ox-upd-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.ox-upd-settings__form-body {
+    padding: 24px 24px 8px;
+}
+
+.ox-upd-settings__grid {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: 12px;
+    align-items: start;
+}
+
+.ox-upd-settings--sidepanel .ox-upd-settings__grid {
+    grid-template-columns: 1fr;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__grid {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) minmax(0, 1fr) !important;
+    gap: 10px;
+    align-items: start;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@media (max-width: 1100px) {
+    .ox-upd-settings:not(.ox-upd-settings--admin) .ox-upd-settings__grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .ox-upd-settings:not(.ox-upd-settings--admin) .ox-upd-settings__card--primary {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 720px) {
+    .ox-upd-settings {
+        padding: 6px 8px 16px;
+    }
+
+    .ox-upd-settings__form-body {
+        padding: 16px 16px 4px;
+    }
+
+    .ox-upd-settings:not(.ox-upd-settings--admin) .ox-upd-settings__grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ox-upd-settings:not(.ox-upd-settings--admin) .ox-upd-settings__card--primary {
+        grid-column: auto;
+    }
+}
+
+.ox-upd-settings__card {
+    background: var(--ox-upd-card-bg);
+    border: 1px solid var(--ox-upd-border);
+    border-radius: 8px;
+    padding: 20px 22px;
+    box-sizing: border-box;
+    transition: box-shadow var(--ox-upd-transition), border-color var(--ox-upd-transition);
+}
+
+.ox-upd-settings__card:hover {
+    border-color: #d8dee4;
+    box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+}
+
+.ox-upd-settings__card--primary {
+    background: linear-gradient(180deg, #f8fdff 0%, #fafcfd 100%);
+    border-color: #b8e4f4;
+    box-shadow: 0 2px 12px rgba(47, 198, 246, 0.1);
+}
+
+.ox-upd-settings__card--primary:hover {
+    border-color: #9dd9ef;
+    box-shadow: 0 4px 16px rgba(47, 198, 246, 0.12);
+}
+
+.ox-upd-settings__card-title {
+    margin: 0 0 16px;
+    padding: 0 0 0 10px;
+    border: 0;
+    border-left: 3px solid var(--ui-color-primary);
+    border-radius: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--field-text);
+    line-height: 1.3;
+}
+
+.ox-upd-settings__card-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+    align-items: start;
+}
+
+.ox-upd-settings__field--wide {
+    grid-column: 1 / -1;
+}
+
+.ox-upd-settings__form-group {
+    margin-bottom: 16px;
+    min-width: 0;
+}
+
+.ox-upd-settings__form-group:last-child {
+    margin-bottom: 0;
+}
+
+.ox-upd-settings__label {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--field-label-color);
+    line-height: 1.4;
+}
+
+/* Поля ввода — B24 */
+.ox-upd-settings .ui-ctl-element,
+.ox-upd-settings__field input[type="text"],
+.ox-upd-settings__field input[type="number"],
+.ox-upd-settings__field input[type="password"],
+.ox-upd-settings__field select {
+    width: 100%;
+    max-width: 100%;
+    height: 34px;
+    min-height: 34px;
+    box-sizing: border-box;
+    padding: 0 12px;
+    font-size: 14px;
+    color: var(--field-text);
+    background: #fff;
+    border: 1px solid var(--field-border);
+    border-radius: var(--ox-upd-radius);
+    transition: border-color var(--ox-upd-transition), box-shadow var(--ox-upd-transition);
+}
+
+.ox-upd-settings .ui-ctl-element:hover,
+.ox-upd-settings__field input[type="text"]:hover,
+.ox-upd-settings__field input[type="number"]:hover,
+.ox-upd-settings__field input[type="password"]:hover,
+.ox-upd-settings__field select:hover {
+    border-color: var(--field-border-hover);
+}
+
+.ox-upd-settings .ui-ctl-element:focus,
+.ox-upd-settings__field input[type="text"]:focus,
+.ox-upd-settings__field input[type="number"]:focus,
+.ox-upd-settings__field input[type="password"]:focus,
+.ox-upd-settings__field select:focus {
+    outline: none;
+    border-color: var(--ui-color-primary);
+    box-shadow: 0 0 0 3px rgba(47, 198, 246, 0.2);
+}
+
+.ox-upd-settings .ui-ctl {
+    border: 0;
+    background: transparent;
+    padding: 0;
+    width: 100%;
+}
+
+.ox-upd-settings .ui-ctl-textbox .ui-ctl-element {
+    display: block;
+}
+
+.ox-upd-settings__select.ui-ctl-dropdown {
+    position: relative;
+}
+
+.ox-upd-settings__select.ui-ctl-dropdown::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    width: 7px;
+    height: 7px;
+    margin-top: -5px;
+    border-right: 2px solid #8a96a3;
+    border-bottom: 2px solid #8a96a3;
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+
+.ox-upd-settings__select .ui-ctl-element {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding-right: 30px;
+    cursor: pointer;
+}
+
+/* Кастомный чекбокс B24 */
+.ox-upd-settings__checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ox-upd-settings__checkbox-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    border: 0;
+}
+
+.ox-upd-settings__checkbox-box {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    background: #fff;
+    transition: background var(--ox-upd-transition), border-color var(--ox-upd-transition);
+    position: relative;
+}
+
+.ox-upd-settings__checkbox-box::after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 2px;
+    width: 5px;
+    height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform var(--ox-upd-transition);
+}
+
+.ox-upd-settings__checkbox-input:checked + .ox-upd-settings__checkbox-box {
+    background: var(--ui-color-primary);
+    border-color: var(--ui-color-primary);
+}
+
+.ox-upd-settings__checkbox-input:checked + .ox-upd-settings__checkbox-box::after {
+    transform: rotate(45deg) scale(1);
+}
+
+.ox-upd-settings__checkbox-input:focus-visible + .ox-upd-settings__checkbox-box {
+    box-shadow: 0 0 0 3px rgba(47, 198, 246, 0.2);
+}
+
+.ox-upd-settings__checkbox-input:disabled + .ox-upd-settings__checkbox-box {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.ox-upd-settings__checkbox-text {
+    font-size: 14px;
+    color: var(--field-text);
+    line-height: 1.4;
+}
+
+.ox-upd-settings__crm-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.ox-upd-settings__crm-chip {
+    flex: 1 1 180px;
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    border: 1px solid var(--field-border);
+    border-radius: var(--ox-upd-radius);
+    background: #fff;
+    font-size: 14px;
+    color: var(--field-text);
+    line-height: 1.4;
+    transition: border-color var(--ox-upd-transition);
+}
+
+.ox-upd-settings__crm-chip:hover {
+    border-color: var(--field-border-hover);
+}
+
+.ox-upd-settings__crm-chip-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ox-upd-settings__crm-actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.ox-upd-settings__btn-primary.ui-btn,
+.ox-upd-settings__crm-select.ui-btn {
+    background: var(--ui-color-primary) !important;
+    border-color: var(--ui-color-primary) !important;
+    color: #fff !important;
+    transition: background var(--ox-upd-transition), border-color var(--ox-upd-transition);
+}
+
+.ox-upd-settings__btn-primary.ui-btn:hover,
+.ox-upd-settings__crm-select.ui-btn:hover {
+    background: var(--ui-color-primary-hover) !important;
+    border-color: var(--ui-color-primary-hover) !important;
+    color: #fff !important;
+}
+
+.ox-upd-settings__btn-ghost.ui-btn,
+.ox-upd-settings__crm-clear.ui-btn {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    color: var(--field-label-color) !important;
+    transition: color var(--ox-upd-transition);
+}
+
+.ox-upd-settings__btn-ghost.ui-btn:hover,
+.ox-upd-settings__crm-clear.ui-btn:hover {
+    color: #e24b4a !important;
+    background: transparent !important;
+}
+
+.ox-upd-settings__hint {
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: var(--field-hint-color);
+    line-height: 1.4;
+}
+
+.ox-upd-settings__field-error {
+    display: none;
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #e53935;
+}
+
+.ox-upd-settings__field--error .ui-ctl-element,
+.ox-upd-settings__field--error .ox-upd-settings__crm-chip {
+    border-color: #e53935;
+}
+
+/* Footer формы */
+.ox-upd-settings__form-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--ox-upd-border);
+    background: #fafbfc;
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    box-shadow: 0 -2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.ox-upd-settings__form-footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.ox-upd-settings__submit.ui-btn-primary {
+    background: var(--ui-color-primary) !important;
+    border-color: var(--ui-color-primary) !important;
+    color: #fff !important;
+    transition: background var(--ox-upd-transition), border-color var(--ox-upd-transition);
+}
+
+.ox-upd-settings__submit.ui-btn-primary:hover {
+    background: var(--ui-color-primary-hover) !important;
+    border-color: var(--ui-color-primary-hover) !important;
+    color: #fff !important;
+}
+
+/* Админка: /bitrix/admin/settings.php?mid=ooofix.xmlupd */
+.ox-upd-settings-adm-shell.adm-detail-content {
+    padding: 0;
+    margin: 0;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__form.settings-form {
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__form-body {
+    padding: 0 0 8px;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__card {
+    min-width: 0;
+    padding: 12px 14px 10px;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__card--primary {
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__card-title {
+    margin-bottom: 10px;
+    padding-left: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #535c69;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__form-group {
+    margin-bottom: 12px;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__card-fields {
+    gap: 0;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__label {
+    font-size: 12px;
+    color: #535c69;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__hint {
+    font-size: 11px;
+    color: #80868e;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__form-footer {
+    padding: 12px 0 0;
+    margin: 0;
+    border-top: 1px solid #dce2e8;
+    background: transparent;
+    position: static;
+}
+
+.ox-upd-settings--admin .ox-upd-settings__flash.ui-alert {
+    margin-bottom: 10px;
+    border-radius: var(--ox-upd-radius);
+}
+
+.ox-upd-settings--admin .ox-upd-settings__crm-chip {
+    min-height: 32px;
+    padding: 0 10px;
+    font-size: 13px;
+    border-color: #c6cdd3;
+    background: #fff;
+}
+
+.ox-upd-settings--admin .ui-ctl-element,
+.ox-upd-settings--admin .ox-upd-settings__field input[type="text"],
+.ox-upd-settings--admin .ox-upd-settings__field input[type="number"],
+.ox-upd-settings--admin .ox-upd-settings__field input[type="password"],
+.ox-upd-settings--admin .ox-upd-settings__field select {
+    height: 32px;
+    min-height: 32px;
+    font-size: 13px;
+    border-color: #c6cdd3;
+}
+
+@media (max-width: 720px) {
+    .ox-upd-settings--admin .ox-upd-settings__grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Picker */
+.ox-upd-settings__picker {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 12000;
+}
+
+.ox-upd-settings__picker--open {
+    display: block;
+}
+
+.ox-upd-settings__picker-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+}
+
+.ox-upd-settings__picker-dialog {
+    position: relative;
+    z-index: 1;
+    width: min(480px, calc(100vw - 24px));
+    max-height: calc(100vh - 48px);
+    margin: 24px auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 16px 48px rgba(15, 23, 42, 0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ox-upd-settings__picker-header {
+    padding: 14px 16px 6px;
+}
+
+.ox-upd-settings__picker-title {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.ox-upd-settings__picker-list {
+    overflow: auto;
+    padding: 4px 8px 12px;
+}
+
+.ox-upd-settings__picker-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 0;
+    background: transparent;
+    padding: 8px 10px;
+    border-radius: var(--ox-upd-radius);
+    cursor: pointer;
+    transition: background var(--ox-upd-transition);
+}
+
+.ox-upd-settings__picker-item:hover {
+    background: rgba(47, 198, 246, 0.1);
+}
+
+.ox-upd-settings__picker-item-title {
+    display: block;
+    font-size: 14px;
+    color: var(--field-text);
+}
+
+.ox-upd-settings__picker-item-meta {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--field-hint-color);
+}
+
+.ox-upd-settings__picker-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--field-hint-color);
+    font-size: 13px;
+}
+
+/* Диалог выбора пользователя */
+.ui-selector-dialog[data-context="OX_UPD_SETTINGS"] .ui-selector-search,
+.ui-selector-dialog[data-context="OX_UPD_SETTINGS"] .ui-selector-footer,
+.ui-selector-dialog[data-context="OX_UPD_SETTINGS"] .ui-selector-dialog__footer,
+.ui-selector-dialog[data-context="OX_UPD_SETTINGS"] .ui-selector-dialog__title,
+.ui-entity-selector-dialog .ui-selector-footer,
+.ui-entity-selector-dialog .ui-selector-dialog__footer,
+.ui-entity-selector-dialog [data-role="footer"],
+.ui-entity-selector-dialog .ui-selector-dialog__title {
+    display: none !important;
+}
+
+@media (max-width: 720px) {
+    .ox-upd-settings__form-footer {
+        padding: 16px;
+    }
+}
