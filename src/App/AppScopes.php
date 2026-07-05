@@ -15,7 +15,6 @@ final class AppScopes
     public const REST = [
         'crm',
         'userfieldconfig',
-        'user',
         'disk',
         'bizproc',
         'placement',
@@ -24,7 +23,8 @@ final class AppScopes
     public static function vendorHint(): string
     {
         return 'На vendors.bitrix24.ru в версии приложения:'
-            . ' 1) REST-права: ' . implode(', ', self::REST) . ' (disk — для общего Диска портала);'
+            . ' 1) REST-права: ' . implode(', ', self::REST) . ' (без полного scope «Пользователи»);'
+            . ' disk — для общего Диска портала;'
             . ' 2) «Умные сценарии / шаблоны» = Да (нужно для bizproc.robot.add);'
             . ' 3) «Настраивать CRM» = Да;'
             . ' 4) «Виджеты в интерфейс» = Да.'

@@ -3,32 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Запросить демонстрацию — Генерация XML (УПД)</title>
+    <title>Генерация XML (УПД) — запрос демонстрации</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; color: #222; max-width: 720px; margin: 0 auto; padding: 24px 20px 48px; }
-        h1 { font-size: 1.5rem; }
-        .card { background: #f5f7f8; border-radius: 8px; padding: 20px 22px; margin: 20px 0; }
-        a { color: #2067b0; }
-        .btn { display: inline-block; margin-top: 8px; padding: 10px 18px; background: #2067b0; color: #fff !important; text-decoration: none; border-radius: 6px; }
+        :root { --accent: #2067b0; --bg: #f5f7f8; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; line-height: 1.6; color: #222; max-width: 860px; margin: 0 auto; padding: 24px 20px 48px; }
+        h1 { font-size: 1.75rem; }
+        h2 { font-size: 1.15rem; margin-top: 1.75rem; }
+        .hero { display: flex; gap: 20px; align-items: flex-start; margin: 24px 0; }
+        .hero img { width: 96px; height: 96px; border-radius: 16px; }
+        .card { background: var(--bg); border-radius: 10px; padding: 20px 22px; margin: 20px 0; }
+        label { display: block; font-weight: 600; margin: 12px 0 4px; }
+        input, textarea { width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #c6cdd3; border-radius: 6px; font: inherit; }
+        .btn { display: inline-block; margin-top: 14px; padding: 12px 22px; background: var(--accent); color: #fff !important; text-decoration: none; border: none; border-radius: 6px; font: inherit; cursor: pointer; }
         ul { padding-left: 1.25rem; }
+        a { color: var(--accent); }
     </style>
 </head>
 <body>
-<h1>Запросить демонстрацию</h1>
-<p>Приложение «Генерация XML (УПД)» — формирование XML универсального передаточного документа по сделке CRM Bitrix24.</p>
 
-<div class="card">
-    <p>На демонстрации покажем:</p>
-    <ul>
-        <li>установку и первичную настройку реквизитов;</li>
-        <li>генерацию XML из карточки сделки и через робот CRM;</li>
-        <li>сохранение файла на Диск и в поле «Файл УПД»;</li>
-        <li>типовые сценарии интеграции с 1С и ЭДО.</li>
-    </ul>
-    <p><strong>ООО «РЕШЕНИЕ»</strong> · <a href="mailto:support@ooofix.ru">support@ooofix.ru</a></p>
-    <a class="btn" href="mailto:support@ooofix.ru?subject=Генерация%20XML%20(УПД)%20—%20запрос%20демонстрации&amp;body=Имя%20и%20компания%3A%0AТелефон%3A%0AАдрес%20портала%20Bitrix24%3A%0AУдобное%20время%20для%20демо%3A">Отправить заявку</a>
+<div class="hero">
+    <img src="../assets/ooofix_xmlupd_logo.png" width="96" height="96" alt="Генерация XML (УПД)">
+    <div>
+        <h1>Запросить демонстрацию</h1>
+        <p>Онлайн-презентация приложения <strong>«Генерация XML (УПД)»</strong> для 1С-Битрикс24 — формирование XML УПД из CRM для 1С и ЭДО.</p>
+    </div>
 </div>
 
-<p><a href="support.html">Поддержка</a> · <a href="license.html">Лицензия</a> · <a href="privacy.html">Конфиденциальность</a></p>
+<div class="card">
+    <p>На демонстрации покажем работу именно этого приложения:</p>
+    <ul>
+        <li>установку и первичную настройку реквизитов продавца;</li>
+        <li>создание полей «Номер УПД (1С)» и «Файл УПД» в CRM;</li>
+        <li>генерацию XML из карточки сделки и через робот CRM;</li>
+        <li>сохранение файла на общий Диск и в поле сделки;</li>
+        <li>типовые сценарии передачи XML в 1С и ЭДО.</li>
+    </ul>
+</div>
+
+<h2>Заявка на демо</h2>
+<div class="card">
+    <p><strong>ООО «РЕШЕНИЕ»</strong> · support@ooofix.ru · ответ в течение 1 рабочего дня</p>
+    <form action="mailto:support@ooofix.ru" method="post" enctype="text/plain">
+        <input type="hidden" name="subject" value="Генерация XML (УПД) — запрос демонстрации">
+        <label for="company">Компания и контактное лицо</label>
+        <input id="company" name="company" type="text" required>
+        <label for="phone">Телефон или e-mail для связи</label>
+        <input id="phone" name="contact" type="text" required>
+        <label for="portal">Адрес портала Битрикс24 (если есть)</label>
+        <input id="portal" name="portal" type="text" placeholder="company.bitrix24.ru">
+        <label for="time">Удобное время для демо</label>
+        <input id="time" name="time" type="text" placeholder="Например: будни после 14:00 МСК">
+        <button class="btn" type="submit">Отправить заявку</button>
+    </form>
+</div>
+
+<p><a href="support.html">Поддержка приложения</a> · <a href="license.html">Лицензия</a> · <a href="privacy.html">Конфиденциальность</a></p>
 </body>
 </html>

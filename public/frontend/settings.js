@@ -95,6 +95,21 @@
         });
     }
 
+    function parseApiResponse(r) {
+        return r.json().then(function (data) {
+            if (!data || typeof data !== 'object') {
+                throw new Error('HTTP ' + r.status);
+            }
+            data._httpOk = r.ok;
+            return data;
+        }).catch(function (err) {
+            if (err && err.message && err.message.indexOf('HTTP') === 0) {
+                throw err;
+            }
+            throw new Error('HTTP ' + r.status);
+        });
+    }
+
     var SECTION_HINTS = {
         seller: 'Реквизиты организации, подписант и адреса для XML.',
         crm: 'Смарт-процесс «Счета», публикация в таймлайн.',
@@ -354,7 +369,7 @@
             ufBtn.addEventListener('click', function () {
                 ufBtn.disabled = true;
                 apiFetch('api/sync.php?action=userfields', { method: 'POST', body: {} })
-                    .then(function (r) { return r.json(); })
+                    .then(parseApiResponse)
                     .then(function (res) {
                         var msg = res.message || 'Готово';
                         if (res.log && res.log.length) {
@@ -362,7 +377,9 @@
                         }
                         notify(msg, !res.success);
                     })
-                    .catch(function () { notify('Ошибка создания UF-полей', true); })
+                    .catch(function (err) {
+                        notify((err && err.message) ? err.message : 'Ошибка создания UF-полей', true);
+                    })
                     .finally(function () { ufBtn.disabled = false; });
             });
         }
@@ -373,11 +390,13 @@
                 permsBtn.disabled = true;
                 notify('Проверка REST-права…', false);
                 apiFetch('api/sync.php?action=permissions', { method: 'POST', body: {} })
-                    .then(function (r) { return r.json(); })
+                    .then(parseApiResponse)
                     .then(function (res) {
                         showPermissionsReport(res);
                     })
-                    .catch(function () { notify('Ошибка проверки REST-прав', true); })
+                    .catch(function (err) {
+                        notify((err && err.message) ? err.message : 'Ошибка проверки REST-прав', true);
+                    })
                     .finally(function () { permsBtn.disabled = false; });
             });
         }
@@ -426,8 +445,9 @@
         html += '<table class="ox-perms-report__table"><thead><tr><th>Проверка</th><th>Метод</th><th>Результат</th></tr></thead><tbody>';
         Object.keys((res && res.probes) || {}).forEach(function (key) {
             var p = res.probes[key];
+            var status = p.ok ? 'OK' : (p.optional ? esc(p.error || 'не требуется') + ' (опционально)' : esc(p.error || 'ошибка'));
             html += '<tr><td>' + esc(p.title || key) + '</td><td>' + esc(p.method) + '</td><td>'
-                + (p.ok ? 'OK' : esc(p.error || 'ошибка')) + '</td></tr>';
+                + status + '</td></tr>';
         });
         html += '</tbody></table>';
 

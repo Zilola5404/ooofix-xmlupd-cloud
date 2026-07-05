@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Ooofix\XmlupdCloud\Rest;
 
-use Ooofix\XmlupdCloud\App\AppScopes;
 use Ooofix\XmlupdCloud\Core\Config;
 use Ooofix\XmlupdCloud\Core\Crm\ProductPriceNormalizer;
 use Ooofix\XmlupdCloud\Core\DadataClient;
@@ -383,41 +382,9 @@ final class RestDataCollector
             return $stored;
         }
 
-        $mode = Config::signatoryMode();
-        $userId = match ($mode) {
-            'current_user' => $this->currentUserId,
-            default        => Config::signatoryUserId(),
-        };
-
-        if ($userId <= 0) {
-            return $stored;
-        }
-
-        try {
-            $user = $this->client->result('user.get', ['ID' => $userId]);
-        } catch (\Throwable $e) {
-            if (AppScopes::isPrivilegeError($e)) {
-                return $stored;
-            }
-
-            throw $e;
-        }
-
-        if (!is_array($user)) {
-            return $stored;
-        }
-
         return [
-            'ID'         => $userId,
-            'NAME'       => trim(implode(' ', array_filter([
-                $user['LAST_NAME'] ?? '',
-                $user['NAME'] ?? '',
-                $user['SECOND_NAME'] ?? '',
-            ]))),
-            'POSITION'   => (string)($user['WORK_POSITION'] ?? $position),
-            'LAST_NAME'  => (string)($user['LAST_NAME'] ?? ''),
-            'FIRST_NAME' => (string)($user['NAME'] ?? ''),
-            'MIDDLE_NAME'=> (string)($user['SECOND_NAME'] ?? ''),
+            'NAME'     => '',
+            'POSITION' => $position,
         ];
     }
 

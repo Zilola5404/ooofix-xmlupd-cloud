@@ -14,7 +14,7 @@ use Ooofix\XmlupdCloud\Storage\SettingsRepository;
  */
 final class RestPermissionsDiagnostic
 {
-    /** @var array<string, array{method: string, params: array<string, mixed>, title: string}> */
+    /** @var array<string, array{method: string, params: array<string, mixed>, title: string, optional?: bool}> */
     private const PROBES = [
         'crm' => [
             'title'  => 'CRM',
@@ -29,11 +29,6 @@ final class RestPermissionsDiagnostic
                 'filter'   => ['entityId' => 'CRM_DEAL'],
             ],
         ],
-        'user' => [
-            'title'  => 'Пользователи',
-            'method' => 'user.current',
-            'params' => [],
-        ],
         'disk' => [
             'title'  => 'Общий Диск',
             'method' => 'disk.storage.getlist',
@@ -43,14 +38,15 @@ final class RestPermissionsDiagnostic
             ],
         ],
         'bizproc' => [
-            'title'  => 'Бизнес-процессы (роботы)',
-            'method' => 'bizproc.robot.list',
-            'params' => [],
+            'title'    => 'Бизнес-процессы (роботы)',
+            'method'   => 'bizproc.robot.list',
+            'params'   => [],
+            'optional' => true,
         ],
         'placement' => [
             'title'  => 'Виджеты (placement)',
             'method' => 'placement.list',
-            'params' => ['SCOPE' => 'CRM'],
+            'params' => [],
         ],
     ];
 
@@ -87,7 +83,7 @@ final class RestPermissionsDiagnostic
 
         $blocking = [];
         foreach ($probes as $scope => $probe) {
-            if (!$probe['ok']) {
+            if (!($probe['ok'] ?? false) && empty($probe['optional'])) {
                 $blocking[] = $scope;
             }
         }
@@ -141,7 +137,7 @@ final class RestPermissionsDiagnostic
     }
 
     /**
-     * @param array{title: string, method: string, params: array<string, mixed>} $probe
+     * @param array{title: string, method: string, params: array<string, mixed>, optional?: bool} $probe
      * @return array<string, mixed>
      */
     private function probeEntry(string $scope, array $probe): array
@@ -152,6 +148,7 @@ final class RestPermissionsDiagnostic
             'scope'      => $scope,
             'title'      => $probe['title'],
             'method'     => $probe['method'],
+            'optional'   => !empty($probe['optional']),
             'ok'         => $result['ok'],
             'error'      => $result['error'] ?? '',
             'error_code' => $result['error_code'] ?? '',

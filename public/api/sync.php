@@ -90,9 +90,43 @@ function handleDisk(BitrixClient $client, int $portalId): void
 
 function handlePermissions(BitrixClient $client, int $portalId): void
 {
-    $report = (new RestPermissionsDiagnostic($client, $portalId))->run();
+    try {
+        $report = (new RestPermissionsDiagnostic($client, $portalId))->run();
+        Http::jsonResponse($report);
+    } catch (\Throwable $e) {
+        Http::jsonResponse([
+            'success'              => false,
+            'ready_for_generation' => false,
+            'summary'              => 'Ошибка проверки REST: ' . $e->getMessage(),
+            'portal_id'            => $portalId,
+            'domain'               => $client->domain(),
+            'probes'               => [],
+            'fix_steps'            => [
+                'Откройте приложение из меню портала (не прямой URL в браузере).',
+                'Убедитесь, что приложение установлено администратором.',
+                'Переустановите приложение и подтвердите запрошенные права.',
+            ],
+        ]);
+    }
+}
 
-    Http::jsonResponse($report);
+function handleUserfields(BitrixClient $client, int $portalId): void
+{
+    $smartTypeId = (int)(new SettingsRepository())->get($portalId, 'smart_invoice_type_id', '0');
+    if ($smartTypeId <= 0) {
+        $smartTypeId = (int)(new SettingsRepository())->get($portalId, 'smart_invoice_spa_id', '0');
+    }
+
+    $installer = new UserFieldInstaller();
+    $result = $installer->installAllResult($client, $smartTypeId);
+
+    Http::jsonResponse([
+        'success' => $result['success'],
+        'action'  => 'userfields',
+        'message' => $result['message'],
+        'log'     => $result['log'],
+        'errors'  => $result['errors'],
+    ], $result['success'] ? 200 : 422);
 }
 
 function handleOAuthRefresh(BitrixClient $client, int $portalId): void
@@ -106,23 +140,5 @@ function handleOAuthRefresh(BitrixClient $client, int $portalId): void
         'scope'      => $result['scope'] ?? '',
         'token_hint' => $result['token_hint'] ?? '',
         'message'    => 'Токен обновлён через oauth.bitrix.info',
-    ]);
-}
-
-function handleUserfields(BitrixClient $client, int $portalId): void
-{
-    $smartTypeId = (int)(new SettingsRepository())->get($portalId, 'smart_invoice_type_id', '31');
-    if ($smartTypeId <= 0) {
-        $smartTypeId = 31;
-    }
-
-    $installer = new UserFieldInstaller();
-    $installer->installAll($client, $smartTypeId);
-
-    Http::jsonResponse([
-        'success' => true,
-        'action'  => 'userfields',
-        'message' => 'Поля UF_UPD_NUMBER и UF_UPD_FILE проверены/созданы',
-        'log'     => $installer->getLog(),
     ]);
 }

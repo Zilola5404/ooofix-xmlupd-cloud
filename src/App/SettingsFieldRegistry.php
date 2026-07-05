@@ -62,7 +62,7 @@ final class SettingsFieldRegistry
                 'section' => 'seller',
                 'type'    => 'string',
                 'label'   => 'ФИО подписанта',
-                'hint'    => 'Для XML-файла. Заполняется при выборе пользователя или вручную (если нет REST-права user).',
+                'hint'    => 'Для XML-файла. Заполняется при выборе пользователя в интерфейсе B24 или вручную в этом поле.',
                 'placeholder' => 'Иванов Иван Иванович',
                 'default' => '',
                 'validate'=> ['maxLength' => 255],

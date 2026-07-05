@@ -7,22 +7,55 @@ namespace Ooofix\XmlupdCloud\Rest;
 use Ooofix\XmlupdCloud\App\AppScopes;
 
 /**
- * Создание UF для сделок (crm.deal.userfield.*) и смарт-процессов (userfieldconfig.*).
+ * Создание UF для сделок (crm.deal.userfield.* / userfieldconfig) и смарт-процессов.
  */
 final class UserFieldInstaller
 {
     private const LABEL_NUMBER = 'Номер УПД (1С)';
     private const LABEL_FILE   = 'Файл УПД';
+    private const DEAL_ENTITY  = 'CRM_DEAL';
 
     /** @var list<string> */
     private array $log = [];
 
-    public function installAll(BitrixClient $client, int $smartEntityTypeId): void
+    /** @var list<string> */
+    private array $errors = [];
+
+    /**
+     * @return array{success: bool, message: string, log: list<string>, errors: list<string>}
+     */
+    public function installAllResult(BitrixClient $client, int $smartEntityTypeId): array
     {
+        $this->log = [];
+        $this->errors = [];
+
         $this->installForDeals($client);
 
         if ($smartEntityTypeId > 0) {
             $this->installForSmartType($client, $smartEntityTypeId);
+        }
+
+        $dealOk = $this->dealFieldsReady($client);
+        $success = $dealOk;
+        $message = $dealOk
+            ? ($this->errors === []
+                ? 'Поля UF_UPD_NUMBER и UF_UPD_FILE проверены/созданы'
+                : 'Поля для сделок готовы. Смарт-процесс: ' . implode('; ', $this->errors))
+            : 'Не удалось создать поля для сделок: ' . implode('; ', $this->errors);
+
+        return [
+            'success' => $success,
+            'message' => $message,
+            'log'     => $this->log,
+            'errors'  => $this->errors,
+        ];
+    }
+
+    public function installAll(BitrixClient $client, int $smartEntityTypeId): void
+    {
+        $result = $this->installAllResult($client, $smartEntityTypeId);
+        if (!$result['success'] && !$this->dealFieldsReady($client)) {
+            throw new \RuntimeException($result['message']);
         }
     }
 
@@ -30,6 +63,12 @@ final class UserFieldInstaller
     public function getLog(): array
     {
         return $this->log;
+    }
+
+    /** @return list<string> */
+    public function getErrors(): array
+    {
+        return $this->errors;
     }
 
     public function installForDeals(BitrixClient $client): void
@@ -42,7 +81,7 @@ final class UserFieldInstaller
     {
         $meta = UserFieldCodes::resolveSmartType($client, $entityTypeId);
         if ($meta === null) {
-            $this->log[] = 'СП entityTypeId=' . $entityTypeId . ': тип не найден в crm.type.list';
+            $this->log[] = 'СП entityTypeId=' . $entityTypeId . ': тип не найден в crm.type.list (пропущено)';
 
             return;
         }
@@ -57,20 +96,10 @@ final class UserFieldInstaller
         }
     }
 
-  /** @deprecated Используйте UserFieldCodes::resolveSmartType */
-    public static function resolveUserFieldEntityIds(BitrixClient $client, int $entityTypeId): array
+    private function dealFieldsReady(BitrixClient $client): bool
     {
-        $meta = UserFieldCodes::resolveSmartType($client, $entityTypeId);
-
-        return $meta !== null ? [$meta['entityId']] : ['CRM_' . $entityTypeId];
-    }
-
-    /** @deprecated Используйте UserFieldCodes::resolveSmartType */
-    public static function resolveUserFieldEntityId(BitrixClient $client, int $entityTypeId): string
-    {
-        $ids = self::resolveUserFieldEntityIds($client, $entityTypeId);
-
-        return $ids[0] ?? ('CRM_' . $entityTypeId);
+        return $this->dealFieldExists($client, UserFieldCodes::DEAL_NUMBER)
+            && $this->dealFieldExists($client, UserFieldCodes::DEAL_FILE);
     }
 
     private function ensureDealField(
@@ -85,11 +114,32 @@ final class UserFieldInstaller
             return;
         }
 
+        $lastError = '';
+
         try {
             $client->call('crm.deal.userfield.add', [
                 'fields' => $this->buildDealFieldPayload($fieldName, $userTypeId, $label),
             ]);
-            $this->log[] = 'Сделки: создано поле ' . $fieldName;
+            $this->log[] = 'Сделки: создано поле ' . $fieldName . ' (crm.deal.userfield.add)';
+
+            return;
+        } catch (\Throwable $e) {
+            $lastError = $e->getMessage();
+            if ($this->isAlreadyExistsError($e)) {
+                $this->log[] = 'Сделки: поле ' . $fieldName . ' уже существует';
+
+                return;
+            }
+        }
+
+        try {
+            $client->call('userfieldconfig.add', [
+                'moduleId' => 'crm',
+                'field'    => $this->buildSmartFieldPayload(self::DEAL_ENTITY, $fieldName, $userTypeId, $label),
+            ]);
+            $this->log[] = 'Сделки: создано поле ' . $fieldName . ' (userfieldconfig.add)';
+
+            return;
         } catch (\Throwable $e) {
             if ($this->isAlreadyExistsError($e)) {
                 $this->log[] = 'Сделки: поле ' . $fieldName . ' уже существует';
@@ -97,11 +147,8 @@ final class UserFieldInstaller
                 return;
             }
 
-            throw new \RuntimeException(
-                'Не удалось создать поле ' . $fieldName . ' для сделок: ' . $e->getMessage(),
-                0,
-                $e
-            );
+            $this->errors[] = 'Сделки ' . $fieldName . ': '
+                . self::shortError($lastError !== '' ? $lastError : $e->getMessage());
         }
     }
 
@@ -135,25 +182,22 @@ final class UserFieldInstaller
                 return;
             }
 
+            $message = self::shortError($e->getMessage());
             if ($this->isScopeError($e)) {
-                throw new \RuntimeException(
-                    'Недостаточно прав для userfieldconfig.add (смарт-процесс ' . $entityId . '). '
-                    . AppScopes::vendorHint(),
-                    0,
-                    $e
-                );
+                $message .= '. ' . AppScopes::vendorHint();
             }
 
-            throw new \RuntimeException(
-                'Не удалось создать поле ' . $fieldName . ' для ' . $entityId . ': ' . $e->getMessage(),
-                0,
-                $e
-            );
+            $this->errors[] = $entityId . ' ' . $fieldName . ': ' . $message;
+            $this->log[] = $entityId . ': ошибка ' . $fieldName . ' — ' . $message;
         }
     }
 
     private function dealFieldExists(BitrixClient $client, string $fieldName): bool
     {
+        if ($this->smartFieldExists($client, self::DEAL_ENTITY, $fieldName)) {
+            return true;
+        }
+
         try {
             $list = $client->result('crm.deal.userfield.list', [
                 'filter' => ['FIELD_NAME' => $fieldName],
@@ -243,10 +287,13 @@ final class UserFieldInstaller
 
     private function isScopeError(\Throwable $e): bool
     {
-        $msg = mb_strtolower($e->getMessage());
+        return AppScopes::isPrivilegeError($e);
+    }
 
-        return str_contains($msg, 'higher privileges')
-            || str_contains($msg, 'required more scopes')
-            || str_contains($msg, 'more scopes');
+    private static function shortError(string $message): string
+    {
+        $message = preg_replace('/\.\s*На vendors\.bitrix24\.ru.*$/su', '', $message) ?? $message;
+
+        return trim($message);
     }
 }

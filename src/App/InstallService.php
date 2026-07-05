@@ -29,7 +29,11 @@ final class InstallService
         $smartMeta = UserFieldCodes::resolveSmartType($client, $smartTypeId);
         $warnings = [];
 
-        $this->installUserFields($client, $smartTypeId);
+        try {
+            $this->installUserFields($client, $smartTypeId);
+        } catch (\Throwable $e) {
+            $warnings[] = $this->formatStepError('UF-поля CRM', $e);
+        }
 
         try {
             if ($portalId <= 0) {
@@ -159,8 +163,12 @@ final class InstallService
     private function installUserFields(BitrixClient $client, int $smartTypeId): void
     {
         $installer = new UserFieldInstaller();
-        $installer->installAll($client, $smartTypeId);
-        $this->userFieldLog = $installer->getLog();
+        $result = $installer->installAllResult($client, $smartTypeId);
+        $this->userFieldLog = $result['log'];
+
+        if (!$result['success'] && $result['errors'] !== []) {
+            throw new \RuntimeException($result['message']);
+        }
     }
 
     /**
