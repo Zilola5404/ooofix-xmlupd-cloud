@@ -53,6 +53,19 @@ final class LogRepository
         $stmt = Database::pdo()->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll();
+        $rows = [];
+        foreach ($stmt->fetchAll() as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $mapped = RowMapper::log($row);
+            $mapped['CRM_PATH'] = RowMapper::crmPath(
+                $mapped['ENTITY_TYPE'],
+                (int)$mapped['ENTITY_ID'],
+            );
+            $rows[] = $mapped;
+        }
+
+        return $rows;
     }
 }

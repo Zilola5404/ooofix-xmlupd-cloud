@@ -76,7 +76,7 @@ class XmlValidator
             $errors = ['Документ не соответствует XSD-схеме ФНС'];
         }
 
-        return $this->fail($errors, $schemaPath, $formatVersion);
+        return $this->fail($errors, $schemaPath, $formatVersion, $xml);
     }
 
     public function validate(string $xml, ?string $xsdPath = null, ?string $formatVersion = null): bool
@@ -111,12 +111,12 @@ class XmlValidator
      *     format_version: string|null
      * }
      */
-    private function fail(array $errors, ?string $schemaPath, ?string $formatVersion): array
+    private function fail(array $errors, ?string $schemaPath, ?string $formatVersion, ?string $xml = null): array
     {
         return [
             'valid'          => false,
             'errors'         => $errors,
-            'user_message'   => XsdErrorFormatter::userFacingMessage($errors),
+            'user_message'   => XsdErrorFormatter::userFacingMessage($errors, $xml),
             'schema_path'    => $schemaPath,
             'format_version' => $formatVersion,
         ];

@@ -101,6 +101,9 @@ final class DocumentRepository
         $stmt = Database::pdo()->prepare($sql);
         $stmt->execute($params);
 
-        return $stmt->fetchAll();
+        return array_map(
+            static fn (array $row): array => RowMapper::document($row),
+            array_values(array_filter($stmt->fetchAll(), 'is_array')),
+        );
     }
 }

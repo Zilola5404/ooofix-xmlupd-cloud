@@ -1,5 +1,5 @@
 /**
- * Документы и логи — общая загрузка данных через REST API приложения.
+ * Документы и логи — загрузка данных через REST API приложения.
  */
 (function (window) {
     'use strict';
@@ -10,10 +10,127 @@
         return d.innerHTML;
     }
 
-    function withAuth(url) {
-        var auth = BX24.getAuth();
+    function field(row, upper, lower) {
+        if (row && row[upper] != null && row[upper] !== '') {
+            return row[upper];
+        }
+        if (row && row[lower] != null && row[lower] !== '') {
+            return row[lower];
+        }
+        return '';
+    }
+
+    function fetchApi(url) {
+        if (window.OX_CLOUD_API && typeof OX_CLOUD_API.apiFetch === 'function') {
+            return OX_CLOUD_API.apiFetch(url);
+        }
+
+        var auth = BX24.getAuth() || {};
         var sep = url.indexOf('?') >= 0 ? '&' : '?';
-        return url + sep + 'DOMAIN=' + encodeURIComponent(auth.domain);
+        url += sep + 'DOMAIN=' + encodeURIComponent(auth.domain || '');
+        if (auth.access_token) {
+            url += '&AUTH_ID=' + encodeURIComponent(auth.access_token);
+        }
+        if (auth.refresh_token) {
+            url += '&REFRESH_ID=' + encodeURIComponent(auth.refresh_token);
+        }
+        if (auth.member_id) {
+            url += '&member_id=' + encodeURIComponent(auth.member_id);
+        }
+
+        return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+    }
+
+    function openCrmPath(path) {
+        if (!path) {
+            return;
+        }
+        if (typeof BX24 !== 'undefined' && typeof BX24.openPath === 'function') {
+            BX24.openPath(path);
+            return;
+        }
+        window.open(path, '_blank');
+    }
+
+    function openFileUrl(url, fileId) {
+        fileId = parseInt(fileId, 10) || 0;
+
+        if (url) {
+            try {
+                if (typeof BX24 !== 'undefined' && typeof BX24.openPath === 'function') {
+                    if (url.charAt(0) === '/') {
+                        BX24.openPath(url);
+                        return;
+                    }
+                    if (/\/disk\/file\//i.test(url)) {
+                        var pathMatch = url.match(/(\/disk\/file\/[^?#]+)/i);
+                        if (pathMatch && pathMatch[1]) {
+                            BX24.openPath(pathMatch[1]);
+                            return;
+                        }
+                    }
+                }
+            } catch (e) {
+                // fallback ниже
+            }
+            window.open(url, '_blank');
+            return;
+        }
+
+        if (fileId > 0 && typeof BX24 !== 'undefined' && typeof BX24.callMethod === 'function') {
+            BX24.callMethod('disk.file.get', { id: fileId }, function (res) {
+                if (res.error()) {
+                    return;
+                }
+                var file = res.data() || {};
+                openFileUrl(file.DETAIL_URL || file.DOWNLOAD_URL || '', 0);
+            });
+        }
+    }
+
+    function crmLink(path, label) {
+        label = label == null ? '' : String(label);
+        if (!path || label === '') {
+            return esc(label);
+        }
+
+        return '<a href="#" class="ox-xml-grid__link" data-crm-path="' + esc(path) + '">' + esc(label) + '</a>';
+    }
+
+    function fileLink(url, fileId, label) {
+        label = label == null ? '' : String(label);
+        fileId = parseInt(fileId, 10) || 0;
+        if (label === '') {
+            return '';
+        }
+        if (!url && fileId <= 0) {
+            return esc(label);
+        }
+
+        return '<a href="#" class="ox-xml-grid__link" data-file-url="' + esc(url) + '" data-file-id="' + esc(fileId) + '">' + esc(label) + '</a>';
+    }
+
+    function bindGridLinks(root) {
+        if (!root) {
+            return;
+        }
+
+        root.querySelectorAll('[data-crm-path]').forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                openCrmPath(link.getAttribute('data-crm-path') || '');
+            });
+        });
+
+        root.querySelectorAll('[data-file-url]').forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                openFileUrl(
+                    link.getAttribute('data-file-url') || '',
+                    link.getAttribute('data-file-id') || 0
+                );
+            });
+        });
     }
 
     function ensureMenuTitle() {
@@ -58,7 +175,7 @@
 
             ensureMenuTitle();
 
-            fetch(withAuth(apiPath), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            fetchApi(apiPath)
                 .then(function (r) { return r.json(); })
                 .then(function (data) {
                     var tbody = document.querySelector(tbodySelector);
@@ -76,6 +193,7 @@
                         tr.innerHTML = html;
                         tbody.appendChild(tr);
                     });
+                    bindGridLinks(tbody);
                     if (typeof BX24.fitWindow === 'function') {
                         BX24.fitWindow();
                     }
@@ -99,24 +217,39 @@
         initDocuments: function () {
             initTable('api/documents.php', '#docs-table tbody', function (data) {
                 return (data.documents || []).map(function (row) {
-                    return '<td>' + esc(row.ID) + '</td>'
-                        + '<td>' + esc(row.ENTITY_TYPE) + '</td>'
-                        + '<td>' + esc(row.ENTITY_ID) + '</td>'
-                        + '<td>' + esc(row.FILE_NAME) + '</td>'
-                        + '<td>' + esc(row.VERSION) + '</td>'
-                        + '<td>' + esc(row.CREATED_AT) + '</td>';
+                    var docId = field(row, 'ID', 'id');
+                    var entityId = field(row, 'ENTITY_ID', 'entity_id');
+                    var crmPath = field(row, 'CRM_PATH', 'crm_path');
+                    var fileName = field(row, 'FILE_NAME', 'file_name');
+                    var fileUrl = field(row, 'FILE_URL', 'file_url');
+                    var fileId = field(row, 'FILE_ID', 'file_id');
+                    var createdAt = field(row, 'CREATED_AT', 'created_at');
+
+                    return '<td>' + esc(fileId || docId) + '</td>'
+                        + '<td>' + esc(field(row, 'ENTITY_TYPE', 'entity_type')) + '</td>'
+                        + '<td>' + crmLink(crmPath, entityId) + '</td>'
+                        + '<td>' + fileLink(fileUrl, fileId, fileName) + '</td>'
+                        + '<td>' + esc(field(row, 'VERSION', 'version')) + '</td>'
+                        + '<td>' + esc(createdAt) + '</td>';
                 });
             }, 6);
         },
         initLogs: function () {
             initTable('api/logs.php', '#logs-table tbody', function (data) {
                 return (data.logs || []).map(function (row) {
-                    return '<td>' + esc(row.ID) + '</td>'
-                        + '<td>' + esc(row.ENTITY_TYPE) + '</td>'
-                        + '<td>' + esc(row.ENTITY_ID) + '</td>'
-                        + '<td>' + esc(row.STATUS) + '</td>'
-                        + '<td>' + esc(row.MESSAGE || '') + '</td>'
-                        + '<td>' + esc(row.CREATED_AT) + '</td>';
+                    var logId = field(row, 'ID', 'id');
+                    var entityId = field(row, 'ENTITY_ID', 'entity_id');
+                    var crmPath = field(row, 'CRM_PATH', 'crm_path');
+                    var statusLabel = field(row, 'STATUS_LABEL', 'status_label')
+                        || field(row, 'STATUS', 'status');
+                    var createdAt = field(row, 'CREATED_AT', 'created_at');
+
+                    return '<td>' + esc(logId) + '</td>'
+                        + '<td>' + esc(field(row, 'ENTITY_TYPE', 'entity_type')) + '</td>'
+                        + '<td>' + crmLink(crmPath, entityId) + '</td>'
+                        + '<td>' + esc(statusLabel) + '</td>'
+                        + '<td>' + esc(field(row, 'MESSAGE', 'message')) + '</td>'
+                        + '<td>' + esc(createdAt) + '</td>';
                 });
             }, 6);
         }

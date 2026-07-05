@@ -52,6 +52,7 @@ class UpdValidator
         }
 
         if (is_array($mapped['products'] ?? null) && ($mapped['products'] ?? []) !== []) {
+            $errors = array_merge($errors, $this->validateProductMeasures($mapped));
             $errors = array_merge($errors, $this->validateProductSums($mapped));
         }
 
@@ -101,6 +102,26 @@ class UpdValidator
         }
 
         return !empty($mapped[$role . '_address']);
+    }
+
+    /**
+     * @param array<string, mixed> $mapped
+     * @return string[]
+     */
+    private function validateProductMeasures(array $mapped): array
+    {
+        $invalid = OkeiMeasureValidator::findInvalidProduct($mapped['products'] ?? []);
+        if ($invalid === null) {
+            return [];
+        }
+
+        return [
+            ValidationMessages::productMeasureInvalid(
+                $invalid['line'],
+                $invalid['name'],
+                $invalid['measure'] !== '' ? $invalid['measure'] : $invalid['code'],
+            ),
+        ];
     }
 
     /**

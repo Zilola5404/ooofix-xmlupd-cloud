@@ -200,7 +200,7 @@
                 throw new Error('Не удалось загрузить файл на Диск B24');
             }
             return attachFileToEntity(data).then(function () {
-                return {
+                var merged = {
                     FileId: fileId,
                     fileId: fileId,
                     DownloadUrl: uploaded.DOWNLOAD_URL || '',
@@ -209,10 +209,53 @@
                     detailUrl: uploaded.DETAIL_URL || '',
                     FileName: data.FileName || data.fileName || fileName,
                     fileName: data.FileName || data.fileName || fileName,
+                    Version: data.Version || data.version || 0,
+                    version: data.Version || data.version || 0,
+                    EntityType: data.EntityType || data.entityType || entityType,
+                    entityType: data.EntityType || data.entityType || entityType,
+                    EntityId: data.EntityId || data.entityId || 0,
+                    entityId: data.EntityId || data.entityId || 0,
+                    DocNumber: data.DocNumber || data.docNumber || '',
+                    docNumber: data.DocNumber || data.docNumber || '',
+                    Encoding: data.encoding || data.Encoding || 'windows-1251',
+                    encoding: data.encoding || data.Encoding || 'windows-1251',
                     Success: true,
                     success: true
                 };
+                return registerDocument(merged).then(function () {
+                    return merged;
+                });
             });
+        });
+    }
+
+    function registerDocument(data) {
+        var payload = {
+            entityType: data.EntityType || data.entityType || entityType,
+            entityId: parseInt(data.EntityId || data.entityId || 0, 10),
+            fileId: parseInt(data.FileId || data.fileId || 0, 10),
+            fileName: data.FileName || data.fileName || '',
+            version: parseInt(data.Version || data.version || 0, 10),
+            docNumber: data.DocNumber || data.docNumber || '',
+            encoding: data.Encoding || data.encoding || 'windows-1251'
+        };
+
+        if (payload.entityId <= 0 || payload.fileId <= 0) {
+            return Promise.resolve(null);
+        }
+
+        var fetchFn = window.OX_CLOUD_API && OX_CLOUD_API.apiFetch
+            ? OX_CLOUD_API.apiFetch('api/documents.php', { method: 'POST', body: payload })
+            : fetch((window.OX_CLOUD_API_BASE || '..').replace(/\/$/, '') + '/api/documents.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(Object.assign({}, (OX_CLOUD_API && OX_CLOUD_API.authPayload()) || {}, payload))
+            });
+
+        return fetchFn.then(function (r) {
+            return r.json().catch(function () { return null; });
+        }).catch(function () {
+            return null;
         });
     }
 

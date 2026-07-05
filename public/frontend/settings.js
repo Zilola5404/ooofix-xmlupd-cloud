@@ -95,21 +95,6 @@
         });
     }
 
-    function parseApiResponse(r) {
-        return r.json().then(function (data) {
-            if (!data || typeof data !== 'object') {
-                throw new Error('HTTP ' + r.status);
-            }
-            data._httpOk = r.ok;
-            return data;
-        }).catch(function (err) {
-            if (err && err.message && err.message.indexOf('HTTP') === 0) {
-                throw err;
-            }
-            throw new Error('HTTP ' + r.status);
-        });
-    }
-
     var SECTION_HINTS = {
         seller: 'Реквизиты организации, подписант и адреса для XML.',
         crm: 'Смарт-процесс «Счета», публикация в таймлайн.',
@@ -363,114 +348,6 @@
                     }
                 });
         });
-
-        var ufBtn = root.querySelector('[data-action="userfields"]');
-        if (ufBtn) {
-            ufBtn.addEventListener('click', function () {
-                ufBtn.disabled = true;
-                apiFetch('api/sync.php?action=userfields', { method: 'POST', body: {} })
-                    .then(parseApiResponse)
-                    .then(function (res) {
-                        var msg = res.message || 'Готово';
-                        if (res.log && res.log.length) {
-                            msg += '\n' + res.log.join('\n');
-                        }
-                        notify(msg, !res.success);
-                    })
-                    .catch(function (err) {
-                        notify((err && err.message) ? err.message : 'Ошибка создания UF-полей', true);
-                    })
-                    .finally(function () { ufBtn.disabled = false; });
-            });
-        }
-
-        var permsBtn = root.querySelector('[data-action="permissions"]');
-        if (permsBtn) {
-            permsBtn.addEventListener('click', function () {
-                permsBtn.disabled = true;
-                notify('Проверка REST-права…', false);
-                apiFetch('api/sync.php?action=permissions', { method: 'POST', body: {} })
-                    .then(parseApiResponse)
-                    .then(function (res) {
-                        showPermissionsReport(res);
-                    })
-                    .catch(function (err) {
-                        notify((err && err.message) ? err.message : 'Ошибка проверки REST-прав', true);
-                    })
-                    .finally(function () { permsBtn.disabled = false; });
-            });
-        }
-    }
-
-    function showPermissionsReport(res) {
-        var root = document.getElementById('settings-root');
-        if (!root) {
-            return;
-        }
-
-        var flash = root.querySelector('.ox-upd-settings__flash');
-        if (!flash) {
-            flash = document.createElement('div');
-            flash.className = 'ui-alert ox-upd-settings__flash';
-            root.insertBefore(flash, root.firstChild);
-        }
-
-        var ok = !!(res && res.ready_for_generation);
-        flash.className = 'ui-alert ox-upd-settings__flash ' + (ok ? 'ui-alert-success' : 'ui-alert-warning');
-
-        var html = '<div class="ox-perms-report">';
-        html += '<p><strong>' + esc((res && res.summary) || 'Нет данных') + '</strong></p>';
-
-        if (res && res.token_scopes && res.token_scopes.length) {
-            html += '<p>Scope в OAuth-токене: ' + esc(res.token_scopes.join(', ')) + '</p>';
-        } else if (res && res.granted_scopes && res.granted_scopes.length) {
-            html += '<p>Scope в OAuth-токене: ' + esc(res.granted_scopes.join(', ')) + '</p>';
-        } else if (res && res.scope_method && !res.scope_method.ok) {
-            html += '<p>Метод scope: ' + esc(res.scope_method.error || 'недоступен') + '</p>';
-        }
-
-        if (res && res.app_manifest_scopes && res.app_manifest_scopes.length) {
-            html += '<p class="ox-perms-report__hint">Scope на vendors (scope?full=true, не токен): '
-                + esc(res.app_manifest_scopes.join(', ')) + '</p>';
-        }
-
-        if (res && res.token_source) {
-            html += '<p>Источник токена проверки: ' + esc(res.token_source) + '</p>';
-        }
-
-        if (res && res.missing_scopes && res.missing_scopes.length) {
-            html += '<p>Не хватает scope: <strong>' + esc(res.missing_scopes.join(', ')) + '</strong></p>';
-        }
-
-        html += '<table class="ox-perms-report__table"><thead><tr><th>Проверка</th><th>Метод</th><th>Результат</th></tr></thead><tbody>';
-        Object.keys((res && res.probes) || {}).forEach(function (key) {
-            var p = res.probes[key];
-            var status = p.ok ? 'OK' : (p.optional ? esc(p.error || 'не требуется') + ' (опционально)' : esc(p.error || 'ошибка'));
-            html += '<tr><td>' + esc(p.title || key) + '</td><td>' + esc(p.method) + '</td><td>'
-                + status + '</td></tr>';
-        });
-        html += '</tbody></table>';
-
-        if (res && res.disk_xml_folder) {
-            var df = res.disk_xml_folder;
-            html += '<p>Папка /XML/: '
-                + (df.ok ? 'OK (id ' + esc(String(df.folder_id)) + ')' : esc(df.message || 'ошибка'))
-                + '</p>';
-        }
-
-        if (res && res.fix_steps && res.fix_steps.length) {
-            html += '<ol class="ox-perms-report__steps">';
-            res.fix_steps.forEach(function (step) {
-                html += '<li>' + esc(step) + '</li>';
-            });
-            html += '</ol>';
-        }
-        html += '</div>';
-
-        flash.innerHTML = html;
-        if (window.BX24 && typeof BX24.fitWindow === 'function') {
-            try { BX24.fitWindow(); } catch (e) { /* ignore */ }
-        }
     }
 
     function buildSettings(data) {
@@ -508,8 +385,6 @@
         html += '<div class="ox-upd-settings__form-footer">';
         html += '<div class="ox-upd-settings__form-footer-actions">';
         html += '<button type="submit" class="ui-btn ui-btn-primary ui-btn-md ox-upd-settings__submit">Сохранить</button>';
-        html += '<button type="button" class="ui-btn ui-btn-light-border ui-btn-md" data-action="userfields">Создать UF-поля</button>';
-        html += '<button type="button" class="ui-btn ui-btn-light-border ui-btn-md" data-action="permissions">Проверить REST-права</button>';
         html += '</div></div></form></div>';
 
         mount.innerHTML = html;

@@ -123,6 +123,28 @@ final class ValidationMessages
         return 'Итоговая сумма по товарам не сходится с суммой строк. Проверьте цены и количество в блоке «Товары».';
     }
 
+    public static function productMeasureInvalid(int $line, string $productName, string $measureName): string
+    {
+        if ($productName !== '') {
+            $position = 'Для позиции «' . $productName . '»';
+        } elseif ($line > 0) {
+            $position = 'Для позиции №' . $line;
+        } else {
+            $position = 'Для одной из позиций';
+        }
+
+        if ($measureName !== '') {
+            $position .= ' указана некорректная единица измерения «' . $measureName . '».';
+        } else {
+            $position .= ' указана некорректная единица измерения.';
+        }
+
+        return "Не удалось сформировать УПД.\n\n"
+            . $position . "\n\n"
+            . "Для формирования УПД необходимо указать единицу измерения, имеющую корректный код ОКЕИ (например: шт, час, нормо-час, усл. ед. и т.д.).\n\n"
+            . "Проверьте карточку номенклатуры и повторите формирование документа.";
+    }
+
     /**
      * @param string[] $errors
      */

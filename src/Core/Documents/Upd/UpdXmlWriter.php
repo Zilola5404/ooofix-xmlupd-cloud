@@ -256,7 +256,7 @@ class UpdXmlWriter
             $w->startElement('СведТов');
             $w->writeAttribute('НомСтр', (string)($row['LINE'] ?? ''));
             $w->writeAttribute('НаимТов', (string)($row['NAME'] ?? ''));
-            $w->writeAttribute('ОКЕИ_Тов', (string)($row['MEASURE_CODE'] ?? '796'));
+            $w->writeAttribute('ОКЕИ_Тов', OkeiMeasureValidator::formatForXml((string)($row['MEASURE_CODE'] ?? '796')));
             $w->writeAttribute('КолТов', $this->formatQty((float)($row['QUANTITY'] ?? 0)));
             $w->writeAttribute('ЦенаТов', $this->formatMoney((float)($row['PRICE'] ?? 0)));
             $w->writeAttribute('СтТовБезНДС', $this->formatMoney((float)($row['SUM_NET'] ?? 0)));
